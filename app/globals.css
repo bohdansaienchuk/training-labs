@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Figma: Training Labs / 01 - Foundations (8:2).
+   Keep primitive names aligned with the published design tokens. */
+@theme static {
+  --color-*: initial;
+  --color-primary-100: #f1ffb8;
+  --color-primary-300: #e4ff78;
+  --color-primary-500: #d7ff3f;
+  --color-primary-700: #a8cc20;
+  --color-primary-900: #596e0a;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-500: #a3a3a3;
+  --color-neutral-700: #525252;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* 4px base; Figma steps map to p/gap-1, 2, 3, 4, 6, 8, 12, 16. */
+  --spacing: 0.25rem;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  --radius-*: initial;
+  --radius-8: 0.5rem;
+  --radius-12: 0.75rem;
+  --radius-16: 1rem;
+  --radius-24: 1.5rem;
+  --radius-full: 999px;
+
+  /* Heading/M uses the saved Figma Bold style, not its SemiBold annotation. */
+  --text-heading-xl: 2rem;
+  --text-heading-xl--line-height: 2.375rem;
+  --text-heading-xl--font-weight: 700;
+  --text-heading-xl--letter-spacing: 0em;
+  --text-heading-l: 1.5rem;
+  --text-heading-l--line-height: 1.875rem;
+  --text-heading-l--font-weight: 700;
+  --text-heading-l--letter-spacing: 0em;
+  --text-heading-m: 1.25rem;
+  --text-heading-m--line-height: 1.625rem;
+  --text-heading-m--font-weight: 700;
+  --text-heading-m--letter-spacing: 0em;
+  --text-body-l: 1rem;
+  --text-body-l--line-height: 1.5rem;
+  --text-body-l--font-weight: 500;
+  --text-body-l--letter-spacing: 0em;
+  --text-body-m: 0.875rem;
+  --text-body-m--line-height: 1.25rem;
+  --text-body-m--font-weight: 400;
+  --text-body-m--letter-spacing: 0em;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-caption--font-weight: 500;
+  --text-caption--letter-spacing: 0em;
+  --text-button: 1rem;
+  --text-button--line-height: 1.25rem;
+  --text-button--font-weight: 600;
+  --text-button--letter-spacing: 0em;
+  --text-placeholder: 0.875rem;
+  --text-placeholder--line-height: 1.25rem;
+  --text-placeholder--font-weight: 400;
+  --text-placeholder--letter-spacing: 0em;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope), sans-serif;
+  --font-body: var(--font-manrope), sans-serif;
+  /* Sora has no Cyrillic glyphs; Manrope covers the Ukrainian UI. */
+  --font-heading: var(--font-sora), var(--font-manrope), sans-serif;
+  --color-background: var(--color-neutral-950);
+  --color-foreground: var(--color-neutral-50);
 }
 
-@media (prefers-color-scheme: dark) {
+/* Complete Figma text styles, including their font families. */
+@utility type-heading-xl {
+  @apply font-heading text-heading-xl;
+}
+
+@utility type-heading-l {
+  @apply font-heading text-heading-l;
+}
+
+@utility type-heading-m {
+  @apply font-heading text-heading-m;
+}
+
+@utility type-body-l {
+  @apply font-body text-body-l;
+}
+
+@utility type-body-m {
+  @apply font-body text-body-m;
+}
+
+@utility type-caption {
+  @apply font-body text-caption;
+}
+
+@utility type-button {
+  @apply font-body text-button;
+}
+
+@utility type-placeholder {
+  @apply font-body text-placeholder;
+}
+
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground type-body-m;
+  }
 }
