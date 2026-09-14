@@ -12,7 +12,12 @@ const workouts = [
 export default function MyWorkouts() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[390px] flex-col gap-4 px-4 py-6">
-      <h1 className="type-heading-xl text-center">Мої тренування</h1>
+      <header className="flex w-full shrink-0 items-center gap-2.5">
+        <Link href="/" aria-label="На головну" className="flex size-6 shrink-0 items-center justify-center rounded-8 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500">
+          <Image src="/icons/workouts/back.svg" alt="" width={24} height={24} unoptimized />
+        </Link>
+        <h1 className="type-heading-xl min-w-0 flex-1 text-center">Мої тренування</h1>
+      </header>
       <SearchField placeholder="Знайти тренування" label="Пошук тренувань" />
       <Link
         href="/workouts/new"

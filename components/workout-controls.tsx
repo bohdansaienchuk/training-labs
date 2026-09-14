@@ -21,7 +21,7 @@ export function PrimaryButton({ children, ...props }: Omit<ButtonHTMLAttributes<
 
 export function SetAction({ icon, children, ...props }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "type"> & { icon: "plus" | "minus" }) {
   return (
-    <button type="button" className="type-body-m flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-8 px-1 py-2 text-primary-500 focus-visible:outline-2 focus-visible:outline-primary-500" {...props}>
+    <button type="button" className="type-body-m flex flex-auto items-center justify-center gap-1.5 whitespace-nowrap rounded-8 px-1 py-2 text-primary-500 focus-visible:outline-2 focus-visible:outline-primary-500" {...props}>
       <WorkoutIcon name={icon} />
       <span>{children}</span>
     </button>
