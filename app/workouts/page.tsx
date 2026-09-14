@@ -4,9 +4,9 @@ import { SearchField } from "@/components/search-field";
 import { WorkoutCard } from "@/components/workout-card";
 
 const workouts = [
-  { title: "Тренування A", subtitle: "Верх 6 вправ ~45 хв" },
-  { title: "Тренування B", subtitle: "Низ 6 вправ ~45 хв" },
-  { title: "Тренування C", subtitle: "Верх 6 вправ ~45 хв" },
+  { id: "1", title: "Тренування A", subtitle: "Верх 6 вправ ~45 хв" },
+  { id: "2", title: "Тренування B", subtitle: "Низ 6 вправ ~45 хв" },
+  { id: "3", title: "Тренування C", subtitle: "Верх 6 вправ ~45 хв" },
 ];
 
 export default function MyWorkouts() {
@@ -30,7 +30,7 @@ export default function MyWorkouts() {
       </Link>
       <ul className="flex flex-col gap-3" aria-label="Мої тренування">
         {workouts.map((workout) => (
-          <WorkoutCard key={workout.title} {...workout} />
+          <WorkoutCard key={workout.id} {...workout} />
         ))}
       </ul>
     </main>

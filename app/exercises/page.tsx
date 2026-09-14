@@ -5,7 +5,7 @@ import { SearchField } from "@/components/search-field";
 
 // Preserve the examples and repeated rows from Figma frame 59:3224.
 const exercises = [
-  { id: "bench-barbell", name: "Жим штанги лежачи", muscleGroups: "Груди · Трицепс" },
+  { id: "1", name: "Жим штанги лежачи", muscleGroups: "Груди · Трицепс" },
   { id: "bench-dumbbell", name: "Жим гантелей лежачи", muscleGroups: "Груди · Трицепс" },
   { id: "lateral-raise", name: "Латеральні підйоми із-за спини", muscleGroups: "Дельти" },
   { id: "squat", name: "Присідання зі штангою", muscleGroups: "Квадріцепси · Сідниці" },
@@ -30,7 +30,7 @@ export default function Exercises() {
       </div>
       <ul aria-label="Список вправ" tabIndex={0} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto rounded-12 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:-outline-offset-2">
         {exercises.map(({ id, ...exercise }) => (
-          <ExerciseListItem key={id} {...exercise} />
+          <ExerciseListItem key={id} id={id} {...exercise} />
         ))}
       </ul>
     </main>
