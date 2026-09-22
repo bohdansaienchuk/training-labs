@@ -12,7 +12,7 @@ const columns = ["Підхід", "Вага", "Од", "Повтори", "Запа
 function PreviousResults({ exercise }: { exercise: ActiveSessionExercise }) {
   return (
     <div className="flex flex-col items-center gap-2 overflow-hidden rounded-12 bg-primary-300 p-2 text-[#000000]">
-      <h3 className="type-body-l whitespace-nowrap text-center">Результати попереднього тренування</h3>
+      <h3 className="type-caption w-full whitespace-nowrap text-center">Результати попереднього тренування</h3>
       {exercise.previousSets.length === 0 ? (
         <p className="type-caption py-1 text-center">Немає попередніх результатів</p>
       ) : (
@@ -95,7 +95,7 @@ export function ActiveExerciseCard({ exercise, validate, saveErrors, mutating, m
           <Image src="/icons/workout-details/ellipsis.svg" alt="" width={4} height={18} unoptimized />
         </button>
       </header>
-      <p data-active-set-count className="type-body-m text-[#ffffff]">{countLabel(exercise.sets.length, ["підхід", "підходи", "підходів"])}</p>
+      <p data-active-set-count className="type-body-m -mt-2 text-[#ffffff]">{countLabel(exercise.sets.length, ["підхід", "підходи", "підходів"])}</p>
       <PreviousResults exercise={exercise} />
       <div role="table" aria-label={`Поточні підходи: ${exercise.name}`} className="flex flex-col gap-2">
         <div role="row" className="type-body-m grid grid-cols-5 gap-2 text-center">

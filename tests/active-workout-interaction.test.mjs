@@ -164,6 +164,18 @@ test("exercise subtitle uses the current performed-set count with Ukrainian plur
   assert.equal(subtitle(), "5 підходів");
 });
 
+test("exercise information and previous-results heading use the compact mobile layout", () => {
+  const subtitle = document.querySelector("[data-active-set-count]");
+  const previousResultsHeading = [...document.querySelectorAll("h3")].find((heading) => heading.textContent === "Результати попереднього тренування");
+
+  assert.equal(subtitle.classList.contains("-mt-2"), true);
+  assert.ok(previousResultsHeading);
+  for (const className of ["type-caption", "w-full", "whitespace-nowrap", "text-center"]) {
+    assert.equal(previousResultsHeading.classList.contains(className), true);
+  }
+  assert.equal(previousResultsHeading.classList.contains("type-body-l"), false);
+});
+
 test("exercise three-dot toggles the shared Action List and outside click or Escape closes it", async () => {
   const trigger = document.querySelector('[aria-label="Дії з вправою Bench"]');
   await click(trigger);
