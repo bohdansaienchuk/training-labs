@@ -3,13 +3,16 @@ import assert from "node:assert/strict";
 import { Prisma } from "@prisma/client";
 import {
   addPerformedSet,
+  deleteSessionExercise,
   finishWorkoutSession,
   IncompleteWorkoutError,
   loadActiveWorkoutSession,
   loadCompletedWorkoutSession,
+  moveSessionExercise,
   removePerformedSet,
   savePerformedSet,
   startWorkoutSession,
+  WorkoutSessionError,
 } from "../lib/workout-session.ts";
 import { completedDurationMinutes, elapsedTimer, validatePerformedSet } from "../lib/active-workout.ts";
 
@@ -82,6 +85,13 @@ function database() {
           if (!item || !session || !matchesSession(session, where.workoutSession)) return null;
           return { ...item, sets: include.sets.orderBy.setNumber === "desc" ? sets(item.id).toReversed().slice(0, include.sets.take) : sets(item.id) };
         },
+        update: async ({ where, data }) => Object.assign(working.sessionExercises.find((item) => item.id === where.id), data),
+        delete: async ({ where }) => {
+          const index = working.sessionExercises.findIndex((item) => item.id === where.id);
+          const [deleted] = working.sessionExercises.splice(index, 1);
+          working.performedSets = working.performedSets.filter((set) => set.sessionExerciseId !== where.id);
+          return deleted;
+        },
       },
       performedSet: {
         create: async ({ data }) => { const item = { id: working.nextPerformedSetId++, ...data, weight: data.weight?.toNumber?.() ?? data.weight }; working.performedSets.push(item); return { ...item, weight: decimal(item.weight) }; },
@@ -102,6 +112,7 @@ function database() {
   }
   return {
     snapshot: () => structuredClone(state),
+    mutate: (update) => update(state),
     transaction: async (callback) => {
       const working = structuredClone(state);
       const result = await callback(tx(working));
@@ -124,6 +135,67 @@ test("Start creates one owned session snapshot in template order with empty perf
   assert.deepEqual(state.performedSets.map((set) => [set.sessionExerciseId, set.setNumber, set.weight, set.reps, set.rir, set.completed]), [
     [200, 1, null, null, null, false], [201, 1, null, null, null, false], [201, 2, null, null, null, false],
   ]);
+});
+
+test("direct Active refresh preserves deletion while Details Start restores the template exercise blank", async () => {
+  const db = database();
+  const id = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  let active = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  const bench = active.exercises[0];
+  const row = active.exercises[1];
+  await db.transaction((tx) => savePerformedSet(tx, "10", id, 7, valid(bench.sets[0], { weight: 95, reps: 6, rir: "1" })));
+  await db.transaction((tx) => deleteSessionExercise(tx, "10", id, row.id, 7));
+
+  active = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  assert.deepEqual(active.exercises.map((exercise) => exercise.name), ["Bench"], "direct Active read must not reconcile");
+  assert.equal(await db.transaction((tx) => startWorkoutSession(tx, "10", 7)), id, "Details Start resumes the same session");
+
+  active = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  assert.deepEqual(active.exercises.map((exercise) => [exercise.name, exercise.position]), [["Bench", 1], ["Row", 2]]);
+  assert.deepEqual(active.exercises[0].sets[0], { ...bench.sets[0], weight: 95, reps: 6, rir: "1", completed: true });
+  assert.deepEqual(active.exercises[1].sets.map((set) => [set.setNumber, set.weight, set.reps, set.rir, set.completed]), [
+    [1, null, null, "", false], [2, null, null, "", false],
+  ]);
+});
+
+test("Details Start reconciles template membership/order without mutating history or catalog", async () => {
+  const db = database();
+  const completedId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  const completed = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", completedId, 7));
+  await db.transaction((tx) => finishWorkoutSession(tx, "10", completedId, 7, completed.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set, { weight: 70 })))));
+  const completedState = db.snapshot();
+  const completedExerciseIds = completedState.sessionExercises.filter((exercise) => exercise.workoutSessionId === Number(completedId)).map((exercise) => exercise.id);
+  const completedExercisesBefore = completedState.sessionExercises.filter((exercise) => completedExerciseIds.includes(exercise.id));
+  const completedSetsBefore = completedState.performedSets.filter((set) => completedExerciseIds.includes(set.sessionExerciseId));
+
+  const activeId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  let active = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", activeId, 7));
+  const row = active.exercises.find((exercise) => exercise.exerciseId === "21");
+  await db.transaction((tx) => savePerformedSet(tx, "10", activeId, 7, valid(row.sets[0], { weight: 77, reps: 7, rir: "1" })));
+
+  db.mutate((state) => {
+    state.catalog.push({ id: 22, name: "Press", category: "Shoulders" });
+    state.templateExercises = [
+      { id: 30, workoutId: 10, exerciseId: 21, position: 1 },
+      { id: 32, workoutId: 10, exerciseId: 22, position: 2 },
+    ];
+    state.templateSets = [
+      { id: 41, workoutExerciseId: 30, setNumber: 1 },
+      { id: 40, workoutExerciseId: 30, setNumber: 2 },
+      { id: 43, workoutExerciseId: 32, setNumber: 1 },
+    ];
+  });
+  const catalogBefore = db.snapshot().catalog;
+  assert.equal(await db.transaction((tx) => startWorkoutSession(tx, "10", 7)), activeId);
+
+  active = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", activeId, 7));
+  assert.deepEqual(active.exercises.map((exercise) => [exercise.name, exercise.position]), [["Row", 1], ["Press", 2]]);
+  assert.deepEqual(active.exercises[0].sets[0], { ...row.sets[0], weight: 77, reps: 7, rir: "1", completed: true });
+  assert.deepEqual(active.exercises[1].sets.map((set) => [set.weight, set.reps, set.rir, set.completed]), [[null, null, "", false]]);
+  const state = db.snapshot();
+  assert.deepEqual(state.catalog, catalogBefore);
+  assert.deepEqual(state.sessionExercises.filter((exercise) => completedExerciseIds.includes(exercise.id)), completedExercisesBefore);
+  assert.deepEqual(state.performedSets.filter((set) => completedExerciseIds.includes(set.sessionExerciseId)), completedSetsBefore);
 });
 
 test("Active load validates identity and restores ordered persisted kg/reps/RIR/completed values", async () => {
@@ -153,6 +225,55 @@ test("Add is retry-idempotent, Remove persists with the minimum rule, and templa
   assert.equal(await db.transaction((tx) => removePerformedSet(tx, "10", id, exercise.id, exercise.sets[0].id, 7)), false);
   assert.equal((await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7))).exercises[0].sets.length, 1);
   assert.deepEqual(db.snapshot().templateSets, beforeTemplate);
+});
+
+test("session exercise reorder/delete persists without touching templates, catalog, set ownership, or completed sessions", async () => {
+  const db = database();
+  const historyId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  const history = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", historyId, 7));
+  await db.transaction((tx) => finishWorkoutSession(
+    tx,
+    "10",
+    historyId,
+    7,
+    history.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set, { weight: 70 }))),
+  ));
+  const historyState = db.snapshot();
+  const historyExerciseIds = historyState.sessionExercises.filter((exercise) => exercise.workoutSessionId === Number(historyId)).map((exercise) => exercise.id);
+  const historyExercisesBefore = historyState.sessionExercises.filter((exercise) => historyExerciseIds.includes(exercise.id));
+  const historySetsBefore = historyState.performedSets.filter((set) => historyExerciseIds.includes(set.sessionExerciseId));
+
+  const id = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  const initial = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  const bench = initial.exercises[0];
+  const row = initial.exercises[1];
+  await assert.rejects(db.transaction((tx) => moveSessionExercise(tx, "10", id, bench.id, 8, 1)), WorkoutSessionError);
+  await assert.rejects(db.transaction((tx) => deleteSessionExercise(tx, "11", id, row.id, 7)), WorkoutSessionError);
+  await db.transaction((tx) => savePerformedSet(tx, "10", id, 7, valid(bench.sets[0], { weight: 95, reps: 6, rir: "1" })));
+  const beforeTemplate = db.snapshot().templateExercises;
+  const beforeCatalog = db.snapshot().catalog;
+
+  assert.deepEqual(await db.transaction((tx) => moveSessionExercise(tx, "10", id, bench.id, 7, 1)), [row.id, bench.id]);
+  let refreshed = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  assert.deepEqual(refreshed.exercises.map((exercise) => [exercise.id, exercise.position]), [[row.id, 1], [bench.id, 2]]);
+  assert.deepEqual(refreshed.exercises[1].sets[0], { ...bench.sets[0], weight: 95, reps: 6, rir: "1", completed: true });
+
+  assert.deepEqual(await db.transaction((tx) => moveSessionExercise(tx, "10", id, bench.id, 7, -1)), [bench.id, row.id]);
+  assert.deepEqual(await db.transaction((tx) => deleteSessionExercise(tx, "10", id, row.id, 7)), [bench.id]);
+  refreshed = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7));
+  assert.deepEqual(refreshed.exercises.map((exercise) => [exercise.id, exercise.position]), [[bench.id, 1]]);
+  const state = db.snapshot();
+  assert.deepEqual(state.templateExercises, beforeTemplate);
+  assert.deepEqual(state.catalog, beforeCatalog);
+  assert.deepEqual(state.sessionExercises.filter((exercise) => historyExerciseIds.includes(exercise.id)), historyExercisesBefore);
+  assert.deepEqual(state.performedSets.filter((set) => historyExerciseIds.includes(set.sessionExerciseId)), historySetsBefore);
+  assert.equal(state.sessionExercises.some((exercise) => exercise.id === Number(row.id)), false);
+  assert.equal(state.performedSets.some((set) => set.sessionExerciseId === Number(row.id)), false);
+
+  const inputs = refreshed.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set, { weight: set.weight, reps: set.reps, rir: set.rir })));
+  await db.transaction((tx) => finishWorkoutSession(tx, "10", id, 7, inputs));
+  await assert.rejects(db.transaction((tx) => moveSessionExercise(tx, "10", id, bench.id, 7, 1)), WorkoutSessionError);
+  await assert.rejects(db.transaction((tx) => deleteSessionExercise(tx, "10", id, bench.id, 7)), WorkoutSessionError);
 });
 
 test("Finish rejects empty/partial rows atomically, then completes valid sets once and powers real Completed data", async () => {

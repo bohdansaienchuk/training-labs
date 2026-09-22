@@ -17,16 +17,53 @@ export async function findDemoUserId(tx: Transaction, email: string): Promise<nu
   return user.id;
 }
 
+type SessionExerciseTemplate = {
+  exerciseId: number;
+  position: number;
+  sets: { setNumber: number }[];
+};
+
+async function createSessionExerciseFromTemplate(tx: Transaction, workoutSessionId: number, exercise: SessionExerciseTemplate) {
+  const sessionExercise = await tx.sessionExercise.create({
+    data: { workoutSessionId, exerciseId: exercise.exerciseId, position: exercise.position },
+  });
+  for (const set of exercise.sets) {
+    await tx.performedSet.create({
+      data: { sessionExerciseId: sessionExercise.id, setNumber: set.setNumber, weight: null, reps: null, rir: null, completed: false },
+    });
+  }
+  return sessionExercise;
+}
+
+async function reconcileWorkoutSession(tx: Transaction, session: { id: number; exercises: { id: number; exerciseId: number; position: number }[] }, templateExercises: SessionExerciseTemplate[]) {
+  const templateExerciseIds = new Set(templateExercises.map((exercise) => exercise.exerciseId));
+  if (templateExerciseIds.size !== templateExercises.length) throw new WorkoutSessionError("Duplicate workout exercise");
+
+  const retained = new Map<number, { id: number; exerciseId: number; position: number }>();
+  for (const exercise of session.exercises) {
+    if (!templateExerciseIds.has(exercise.exerciseId) || retained.has(exercise.exerciseId)) {
+      await tx.sessionExercise.delete({ where: { id: exercise.id } });
+    } else {
+      retained.set(exercise.exerciseId, exercise);
+    }
+  }
+
+  for (const exercise of retained.values()) {
+    await tx.sessionExercise.update({ where: { id: exercise.id }, data: { position: -exercise.id } });
+  }
+  for (const templateExercise of templateExercises) {
+    const exercise = retained.get(templateExercise.exerciseId);
+    if (exercise) {
+      await tx.sessionExercise.update({ where: { id: exercise.id }, data: { position: templateExercise.position } });
+    } else {
+      await createSessionExerciseFromTemplate(tx, session.id, templateExercise);
+    }
+  }
+}
+
 export async function startWorkoutSession(tx: Transaction, workoutIdValue: string, userId: number): Promise<string> {
   const workoutId = databaseId(workoutIdValue);
   if (!workoutId || !Number.isInteger(userId) || userId < 1) throw new WorkoutSessionError("Invalid workout session");
-
-  const existing = await tx.workoutSession.findFirst({
-    where: { workoutId, userId, completedAt: null },
-    orderBy: [{ startedAt: "desc" }, { id: "desc" }],
-    select: { id: true },
-  });
-  if (existing) return String(existing.id);
 
   const workout = await tx.workout.findFirst({
     where: { id: workoutId, userId },
@@ -34,16 +71,19 @@ export async function startWorkoutSession(tx: Transaction, workoutIdValue: strin
   });
   if (!workout) throw new WorkoutSessionError("Workout not found");
 
+  const existing = await tx.workoutSession.findFirst({
+    where: { workoutId, userId, completedAt: null },
+    orderBy: [{ startedAt: "desc" }, { id: "desc" }],
+    include: { exercises: { orderBy: { position: "asc" } } },
+  });
+  if (existing) {
+    await reconcileWorkoutSession(tx, existing, workout.exercises);
+    return String(existing.id);
+  }
+
   const session = await tx.workoutSession.create({ data: { workoutId, userId } });
   for (const exercise of workout.exercises) {
-    const sessionExercise = await tx.sessionExercise.create({
-      data: { workoutSessionId: session.id, exerciseId: exercise.exerciseId, position: exercise.position },
-    });
-    for (const set of exercise.sets) {
-      await tx.performedSet.create({
-        data: { sessionExerciseId: sessionExercise.id, setNumber: set.setNumber, weight: null, reps: null, rir: null, completed: false },
-      });
-    }
+    await createSessionExerciseFromTemplate(tx, session.id, exercise);
   }
   return String(session.id);
 }
@@ -122,6 +162,46 @@ export async function removePerformedSet(tx: Transaction, workoutIdValue: string
   if (last.id !== setId) throw new WorkoutSessionError("Only the final set can be removed");
   await tx.performedSet.delete({ where: { id: setId } });
   return true;
+}
+
+async function ownedUnfinishedSessionExercises(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number) {
+  const workoutId = databaseId(workoutIdValue);
+  const sessionId = databaseId(sessionIdValue);
+  const sessionExerciseId = databaseId(sessionExerciseIdValue);
+  if (!workoutId || !sessionId || !sessionExerciseId) throw new WorkoutSessionError("Invalid session exercise");
+  const session = await tx.workoutSession.findFirst({
+    where: { id: sessionId, workoutId, userId, completedAt: null },
+    include: { exercises: { orderBy: { position: "asc" } } },
+  });
+  if (!session || !session.exercises.some((exercise) => exercise.id === sessionExerciseId)) throw new WorkoutSessionError("Session exercise not found");
+  return { sessionExerciseId, exercises: session.exercises };
+}
+
+export async function moveSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number, direction: -1 | 1) {
+  if (direction !== -1 && direction !== 1) throw new WorkoutSessionError("Invalid exercise direction");
+  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, userId);
+  const index = exercises.findIndex((exercise) => exercise.id === sessionExerciseId);
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= exercises.length) return exercises.map((exercise) => String(exercise.id));
+  const selected = exercises[index];
+  const target = exercises[targetIndex];
+  await tx.sessionExercise.update({ where: { id: selected.id }, data: { position: -selected.id } });
+  await tx.sessionExercise.update({ where: { id: target.id }, data: { position: selected.position } });
+  await tx.sessionExercise.update({ where: { id: selected.id }, data: { position: target.position } });
+  const reordered = [...exercises];
+  [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
+  return reordered.map((exercise) => String(exercise.id));
+}
+
+export async function deleteSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number) {
+  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, userId);
+  await tx.sessionExercise.delete({ where: { id: sessionExerciseId } });
+  const remaining = exercises.filter((exercise) => exercise.id !== sessionExerciseId);
+  for (const [index, exercise] of remaining.entries()) {
+    const position = index + 1;
+    if (exercise.position !== position) await tx.sessionExercise.update({ where: { id: exercise.id }, data: { position } });
+  }
+  return remaining.map((exercise) => String(exercise.id));
 }
 
 export async function finishWorkoutSession(tx: Transaction, workoutIdValue: string, sessionIdValue: string, userId: number, inputs: PerformedSetInput[], completedAt = new Date()) {

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useId } from "react";
 import { SetAction } from "@/components/workout-controls";
 import { WeightUnitSelect } from "@/components/weight-unit-select";
-import { convertWeight, validatePerformedSet, type ActivePerformedSet, type ActiveSessionExercise } from "@/lib/active-workout";
+import { convertWeight, countLabel, validatePerformedSet, type ActivePerformedSet, type ActiveSessionExercise } from "@/lib/active-workout";
 import { WEIGHT_UNIT_LABELS } from "@/lib/weight-unit";
 
 const columns = ["Підхід", "Вага", "Од", "Повтори", "Запас"];
@@ -73,12 +73,13 @@ function CurrentSetRow({ set, validate, saveError, onChange }: {
   );
 }
 
-export function ActiveExerciseCard({ exercise, summary, validate, saveErrors, mutating, onSetChange, onAddSet, onRemoveSet }: {
+export function ActiveExerciseCard({ exercise, validate, saveErrors, mutating, menuOpen, onMenuToggle, onSetChange, onAddSet, onRemoveSet }: {
   exercise: ActiveSessionExercise;
-  summary: string;
   validate: boolean;
   saveErrors: ReadonlySet<string>;
   mutating: boolean;
+  menuOpen: boolean;
+  onMenuToggle: (exerciseId: string, trigger: HTMLButtonElement) => void;
   onSetChange: (exerciseId: string, set: ActivePerformedSet, immediate?: boolean) => void;
   onAddSet: (exerciseId: string) => void;
   onRemoveSet: (exerciseId: string, setId: string) => void;
@@ -88,11 +89,13 @@ export function ActiveExerciseCard({ exercise, summary, validate, saveErrors, mu
     <article aria-labelledby={titleId} className="flex w-full shrink-0 flex-col gap-3 rounded-12 bg-neutral-900 p-4 text-neutral-50">
       <header className="flex items-center gap-2">
         <h2 id={titleId} className="type-heading-m min-w-0 flex-1">{exercise.name}</h2>
-        <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
+        <button type="button" data-active-exercise-menu-trigger aria-label={`Дії з вправою ${exercise.name}`} aria-haspopup="menu" aria-expanded={menuOpen}
+          aria-controls={menuOpen ? "active-exercise-actions" : undefined} onClick={(event) => onMenuToggle(exercise.id, event.currentTarget)}
+          className="flex size-6 shrink-0 items-center justify-center rounded-8 focus-visible:outline-2 focus-visible:outline-primary-500">
           <Image src="/icons/workout-details/ellipsis.svg" alt="" width={4} height={18} unoptimized />
-        </span>
+        </button>
       </header>
-      <p className="type-body-m text-[#ffffff]">{summary}</p>
+      <p data-active-set-count className="type-body-m text-[#ffffff]">{countLabel(exercise.sets.length, ["підхід", "підходи", "підходів"])}</p>
       <PreviousResults exercise={exercise} />
       <div role="table" aria-label={`Поточні підходи: ${exercise.name}`} className="flex flex-col gap-2">
         <div role="row" className="type-body-m grid grid-cols-5 gap-2 text-center">

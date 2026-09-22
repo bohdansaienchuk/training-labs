@@ -3,14 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ActiveExerciseCard } from "@/components/active-exercise-card";
-import { countLabel, elapsedTimer, validatePerformedSet, type ActionResult, type ActivePerformedSet, type ActiveWorkoutSession, type PerformedSetInput } from "@/lib/active-workout";
+import { WorkoutExerciseMenu } from "@/components/workout-exercise-menu";
+import { elapsedTimer, validatePerformedSet, type ActionResult, type ActivePerformedSet, type ActiveWorkoutSession, type PerformedSetInput } from "@/lib/active-workout";
 
 type ActiveActions = {
   saveSetAction: (workoutId: string, sessionId: string, input: PerformedSetInput) => Promise<ActionResult<{ completed: boolean }>>;
   addSetAction: (workoutId: string, sessionId: string, sessionExerciseId: string, expectedLastSetId: string) => Promise<ActionResult<{ id: string; setNumber: number }>>;
   removeSetAction: (workoutId: string, sessionId: string, sessionExerciseId: string, setId: string) => Promise<ActionResult<boolean>>;
+  moveExerciseAction: (workoutId: string, sessionId: string, sessionExerciseId: string, direction: -1 | 1) => Promise<ActionResult<string[]>>;
+  deleteExerciseAction: (workoutId: string, sessionId: string, sessionExerciseId: string) => Promise<ActionResult<string[]>>;
   finishAction: (workoutId: string, sessionId: string, inputs: PerformedSetInput[]) => Promise<ActionResult<string>>;
 };
 
@@ -18,7 +21,7 @@ function inputFor(set: ActivePerformedSet): PerformedSetInput {
   return { id: set.id, sessionExerciseId: set.sessionExerciseId, weight: set.weight, weightUnit: set.weightUnit, reps: set.reps, rir: set.rir };
 }
 
-export default function ActiveWorkoutClient({ initialSession, initialNow, saveSetAction, addSetAction, removeSetAction, finishAction }: { initialSession: ActiveWorkoutSession; initialNow: number } & ActiveActions) {
+export default function ActiveWorkoutClient({ initialSession, initialNow, saveSetAction, addSetAction, removeSetAction, moveExerciseAction, deleteExerciseAction, finishAction }: { initialSession: ActiveWorkoutSession; initialNow: number } & ActiveActions) {
   const router = useRouter();
   const [session, setSession] = useState(initialSession);
   const [now, setNow] = useState(initialNow);
@@ -26,11 +29,19 @@ export default function ActiveWorkoutClient({ initialSession, initialNow, saveSe
   const [saveErrors, setSaveErrors] = useState<Set<string>>(() => new Set());
   const [actionError, setActionError] = useState("");
   const [mutatingExerciseId, setMutatingExerciseId] = useState<string | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const finishInFlight = useRef(false);
+  const exerciseMutationInFlight = useRef(false);
+  const menuTrigger = useRef<HTMLButtonElement>(null);
+  const exerciseList = useRef<HTMLElement>(null);
   const saveTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const saveQueues = useRef(new Map<string, Promise<void>>());
   const workoutPath = `/workouts/${encodeURIComponent(session.workoutId)}`;
+  const selectedExerciseIndex = session.exercises.findIndex((exercise) => exercise.id === selectedExerciseId);
+  const closeMenu = useCallback(() => {
+    setSelectedExerciseId(null);
+  }, []);
 
   useEffect(() => {
     const catchUp = setTimeout(() => setNow(Date.now()), 0);
@@ -133,6 +144,54 @@ export default function ActiveWorkoutClient({ initialSession, initialNow, saveSe
     }
   }
 
+  function applyExerciseOrder(exerciseIds: string[]) {
+    setSession((current) => {
+      const byId = new Map(current.exercises.map((exercise) => [exercise.id, exercise]));
+      const exercises = exerciseIds.flatMap((id, index) => {
+        const exercise = byId.get(id);
+        return exercise ? [{ ...exercise, position: index + 1 }] : [];
+      });
+      return { ...current, exercises };
+    });
+  }
+
+  async function performExerciseAction(action: "delete" | "up" | "down") {
+    if (!selectedExerciseId || exerciseMutationInFlight.current) return;
+    exerciseMutationInFlight.current = true;
+    setMutatingExerciseId(selectedExerciseId);
+    setActionError("");
+    try {
+      if (action === "delete") {
+        const exercise = session.exercises.find((item) => item.id === selectedExerciseId);
+        for (const set of exercise?.sets ?? []) {
+          const timer = saveTimers.current.get(set.id);
+          if (timer) clearTimeout(timer);
+          saveTimers.current.delete(set.id);
+          const queued = saveQueues.current.get(set.id);
+          if (queued) await queued;
+        }
+        const result = await deleteExerciseAction(session.workoutId, session.id, selectedExerciseId);
+        if (!result.ok) {
+          setActionError(result.error);
+          return;
+        }
+        applyExerciseOrder(result.value);
+        closeMenu();
+        menuTrigger.current?.focus();
+        return;
+      }
+      const result = await moveExerciseAction(session.workoutId, session.id, selectedExerciseId, action === "up" ? -1 : 1);
+      if (!result.ok) {
+        setActionError(result.error);
+        return;
+      }
+      applyExerciseOrder(result.value);
+    } finally {
+      exerciseMutationInFlight.current = false;
+      setMutatingExerciseId(null);
+    }
+  }
+
   async function finishWorkout() {
     if (finishInFlight.current) return;
     const sets = session.exercises.flatMap((exercise) => exercise.sets);
@@ -164,21 +223,28 @@ export default function ActiveWorkoutClient({ initialSession, initialNow, saveSe
     }
   }
 
-  const summary = countLabel(session.exercises.length, ["вправа", "вправи", "вправ"]);
   return (
     <main className="mx-auto flex h-dvh w-full max-w-[390px] flex-col gap-4 overflow-hidden bg-neutral-950 px-4 py-6">
-      <header className="flex w-full shrink-0 items-center gap-3 text-[#ffffff]">
+      <header className="relative flex w-full shrink-0 items-center justify-between text-[#ffffff]">
         <Link href={workoutPath} aria-label="До деталей тренування" className="flex size-6 shrink-0 items-center justify-center rounded-8 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500">
           <Image src="/icons/workout-details/back.svg" alt="" width={22} height={22} unoptimized />
         </Link>
-        <h1 className="type-heading-xl min-w-0 flex-1 text-center">{session.workoutName}</h1>
-        <span aria-label="Тривалість тренування" className="type-body-l shrink-0 text-right">{elapsedTimer(session.startedAt, now)}</span>
+        <h1 className="type-heading-xl pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center">{session.workoutName}</h1>
+        <span aria-label="Тривалість тренування" className="type-body-l shrink-0 whitespace-nowrap text-right tabular-nums">{elapsedTimer(session.startedAt, now)}</span>
       </header>
-      <section aria-label="Вправи активного тренування" tabIndex={0} className="flex min-h-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto p-2.5 [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500">
-        {session.exercises.map((exercise) => <ActiveExerciseCard key={exercise.id} exercise={exercise} summary={summary} validate={validateAll}
-          saveErrors={saveErrors} mutating={mutatingExerciseId === exercise.id} onSetChange={updateSet}
+      <section ref={exerciseList} aria-label="Вправи активного тренування" tabIndex={0} className="flex min-h-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto p-2.5 [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500">
+        {session.exercises.map((exercise) => <ActiveExerciseCard key={exercise.id} exercise={exercise} validate={validateAll}
+          saveErrors={saveErrors} mutating={mutatingExerciseId === exercise.id} menuOpen={selectedExerciseId === exercise.id}
+          onMenuToggle={(exerciseId, trigger) => {
+            if (selectedExerciseId === exerciseId) closeMenu();
+            else { menuTrigger.current = trigger; setSelectedExerciseId(exerciseId); }
+          }} onSetChange={updateSet}
           onAddSet={(exerciseId) => { void addSet(exerciseId); }} onRemoveSet={(exerciseId, setId) => { void removeSet(exerciseId, setId); }} />)}
       </section>
+      {selectedExerciseIndex !== -1 && <WorkoutExerciseMenu key={selectedExerciseId} selected first={selectedExerciseIndex === 0}
+        last={selectedExerciseIndex === session.exercises.length - 1} busy={mutatingExerciseId === selectedExerciseId}
+        menuId="active-exercise-actions" selectionSelector="[data-active-exercise-menu-trigger]" anchor={menuTrigger}
+        exerciseList={exerciseList} onAction={(action) => { void performExerciseAction(action); }} onClose={closeMenu} />}
       <footer className="flex w-full shrink-0 flex-col items-center gap-2 bg-neutral-950 p-2.5">
         {actionError && <span role="alert" className="type-caption text-error">{actionError}</span>}
         <button type="button" onClick={() => { void finishWorkout(); }} disabled={finishing} className="type-button inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-12 bg-primary-500 px-6 py-3.5 text-neutral-950 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500">
