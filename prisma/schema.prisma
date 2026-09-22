@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int              @id @default(autoincrement())
+  email     String           @unique
+  name      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  workouts  Workout[]
+  sessions  WorkoutSession[]
+}
+
+model Exercise {
+  id               Int               @id @default(autoincrement())
+  name             String
+  category         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  workoutExercises WorkoutExercise[]
+  sessionExercises SessionExercise[]
+}
+
+model Workout {
+  id        Int               @id @default(autoincrement())
+  name      String
+  userId    Int
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises WorkoutExercise[]
+  sessions  WorkoutSession[]
+}
+
+model WorkoutExercise {
+  id         Int          @id @default(autoincrement())
+  workoutId  Int
+  exerciseId Int
+  position   Int
+
+  workout    Workout      @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exercise   Exercise     @relation(fields: [exerciseId], references: [id])
+  sets       WorkoutSet[]
+
+  @@unique([workoutId, position])
+}
+
+model WorkoutSet {
+  id                Int             @id @default(autoincrement())
+  workoutExerciseId Int
+  setNumber         Int
+  targetWeight      Decimal?        @db.Decimal(6, 2)
+  targetReps        Int?
+  targetRir         Int?
+
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutExerciseId, setNumber])
+}
+
+model WorkoutSession {
+  id          Int               @id @default(autoincrement())
+  workoutId   Int
+  userId      Int
+  startedAt   DateTime          @default(now())
+  completedAt DateTime?
+
+  workout     Workout           @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises   SessionExercise[]
+}
+
+model SessionExercise {
+  id               Int             @id @default(autoincrement())
+  workoutSessionId Int
+  exerciseId       Int
+  position         Int
+
+  workoutSession   WorkoutSession  @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exercise         Exercise        @relation(fields: [exerciseId], references: [id])
+  sets             PerformedSet[]
+
+  @@unique([workoutSessionId, position])
+}
+
+model PerformedSet {
+  id                Int             @id @default(autoincrement())
+  sessionExerciseId Int
+  setNumber         Int
+  weight            Decimal?        @db.Decimal(6, 2)
+  reps              Int?
+  rir               Int?
+  completed         Boolean         @default(false)
+
+  sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionExerciseId, setNumber])
+}

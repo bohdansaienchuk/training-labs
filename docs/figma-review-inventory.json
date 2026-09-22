@@ -1,0 +1,2065 @@
+{
+  "fileKey": "QLuSadeuB64GfhduYowfqR",
+  "reviewDate": "2026-09-14",
+  "pages": [
+    {
+      "pageId": "1:4",
+      "page": "03 - Mobile",
+      "screens": [
+        {
+          "id": "31:459",
+          "name": "Active Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "31:461",
+              "name": "Active Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "37:473",
+              "name": "Workout Content",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 658
+            },
+            {
+              "id": "39:1205",
+              "name": "Workout Footer",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "00:00",
+            "Латеральні підйоми кроссовер з-за спини",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Результати попереднього тренування",
+            "Підхід",
+            "Вага",
+            "Од",
+            "Повтори",
+            "Запас",
+            "1",
+            "80",
+            "кг",
+            "10",
+            "2",
+            "84",
+            "8",
+            "3",
+            "82",
+            "4",
+            "max",
+            " ",
+            "Додати підхід",
+            "Видалити підхід",
+            "Жим штанги лежачи",
+            "Метелик лікті",
+            "Завершити тренування"
+          ]
+        },
+        {
+          "id": "31:418",
+          "name": "Workout Details",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "31:460",
+              "name": "Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 70
+            },
+            {
+              "id": "31:433",
+              "name": "Exercise List",
+              "x": 16,
+              "y": 158,
+              "width": 358,
+              "height": 530
+            },
+            {
+              "id": "39:1488",
+              "name": "Frame 1",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Латеральні підйоми кроссовер з-за спини",
+            "4 підходи",
+            "Жим штанги лежачи",
+            "3 підходи",
+            "Метелик лікті",
+            "Пуловер кросовер",
+            "Розгинання на трицепс у блоці пряма рукоятка (статичний блок)",
+            "Біцепс на скам'ї Скотта EZ гриф",
+            "Почати тренування"
+          ]
+        },
+        {
+          "id": "31:378",
+          "name": "My Workouts",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "87:4212",
+              "name": "My Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "31:380",
+              "name": "Search Field",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 48
+            },
+            {
+              "id": "59:1452",
+              "name": "Text Button",
+              "x": 16,
+              "y": 142,
+              "width": 358,
+              "height": 40
+            },
+            {
+              "id": "31:393",
+              "name": "Workout List",
+              "x": 16,
+              "y": 198,
+              "width": 358,
+              "height": 300
+            }
+          ],
+          "text": [
+            "Мої тренування",
+            "Знайти тренування",
+            "Створити тренування",
+            "Тренування A",
+            "Верх 6 вправ ~45 хв",
+            "Тренування B",
+            "Низ 6 вправ ~45 хв",
+            "Тренування C"
+          ]
+        },
+        {
+          "id": "39:1208",
+          "name": "Create Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "39:1209",
+              "name": "Create Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 96
+            },
+            {
+              "id": "39:1215",
+              "name": "Create Workout Content",
+              "x": 16,
+              "y": 184,
+              "width": 358,
+              "height": 505
+            },
+            {
+              "id": "39:1440",
+              "name": "Workout Content Footer",
+              "x": 16,
+              "y": 753,
+              "width": 358,
+              "height": 67
+            }
+          ],
+          "text": [
+            "Створити тренування",
+            "Назва тренування",
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Підхід",
+            "Вага",
+            "Од",
+            "Повтори",
+            "1",
+            " ",
+            "кг",
+            "фунти",
+            "Додати підхід",
+            "Видалити підхід",
+            "Зберегти тренування"
+          ]
+        },
+        {
+          "id": "59:3100",
+          "name": "Workout Completed",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:3101",
+              "name": "Active Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "59:3108",
+              "name": "Workout Content",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 658
+            },
+            {
+              "id": "59:3116",
+              "name": "Workout Footer",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "00:00",
+            "Тренування завершено",
+            "45 хв · 6 вправ · 18 підходів",
+            "До моїх тренувань"
+          ]
+        },
+        {
+          "id": "59:3122",
+          "name": "Home",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:3123",
+              "name": "Home Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 62
+            },
+            {
+              "id": "59:3126",
+              "name": "Home Content",
+              "x": 16,
+              "y": 118,
+              "width": 358,
+              "height": 450
+            }
+          ],
+          "text": [
+            "Training Labs",
+            "Тренуйся. Відстежуй. Прогресуй",
+            "Мої тренування",
+            "Переглядай та запускай свої тренування",
+            "Створити тренування",
+            "Створи нове тренування та додай вправи",
+            "Прогрес",
+            "Переглядай результати та динаміку тренувань",
+            "Вправи",
+            "Переглядай та керуй списком вправ"
+          ]
+        },
+        {
+          "id": "59:3224",
+          "name": "Exercises",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:3225",
+              "name": "Exercises Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "59:3232",
+              "name": "Search Field",
+              "x": 16,
+              "y": 94,
+              "width": 358,
+              "height": 48
+            },
+            {
+              "id": "59:3231",
+              "name": "Exercises Content",
+              "x": 16,
+              "y": 174,
+              "width": 358,
+              "height": 646
+            }
+          ],
+          "text": [
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Груди · Трицепс",
+            "Жим гантелей лежачи",
+            "Латеральні підйоми із-за спини",
+            "Дельти",
+            "Присідання зі штангою",
+            "Квадріцепси · Сідниці",
+            "Пуловер кросовер",
+            "Найширший м'яз спини · Трапеція"
+          ]
+        },
+        {
+          "id": "59:3354",
+          "name": "Exercise Details",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:3355",
+              "name": "Exercise Details Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 146
+            },
+            {
+              "id": "59:3364",
+              "name": "Історія виконання",
+              "x": 99,
+              "y": 202,
+              "width": 192,
+              "height": 26
+            },
+            {
+              "id": "59:3363",
+              "name": "Exercise Details Content",
+              "x": 16,
+              "y": 260,
+              "width": 358,
+              "height": 560
+            }
+          ],
+          "text": [
+            "Латеральні підйоми кросовер із-за спини",
+            "Плечі",
+            "Історія виконання",
+            "27 вересня 2026",
+            "Тренування А",
+            "Підхід",
+            "1",
+            "2",
+            "3",
+            "4",
+            "Вага",
+            "80",
+            "Од",
+            "кг",
+            "Повтори",
+            "15",
+            "Запас",
+            "10 жовтня 2026",
+            "Тренування A",
+            "15 жовтня 2026"
+          ]
+        },
+        {
+          "id": "75:4182",
+          "name": "Progress",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "75:4183",
+              "name": "Progress Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 66
+            },
+            {
+              "id": "75:4191",
+              "name": "Progress Content",
+              "x": 16,
+              "y": 122,
+              "width": 358,
+              "height": 698
+            }
+          ],
+          "text": [
+            "Прогрес",
+            "Дивись, як ти стаєш сильнішим"
+          ]
+        },
+        {
+          "id": "93:1075",
+          "name": "Login Page",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "93:1076",
+              "name": "Login Page Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 102
+            },
+            {
+              "id": "93:1079",
+              "name": "Login Main",
+              "x": 16,
+              "y": 190,
+              "width": 358,
+              "height": 252
+            },
+            {
+              "id": "94:1171",
+              "name": "Background",
+              "x": 0,
+              "y": 464,
+              "width": 390,
+              "height": 380
+            }
+          ],
+          "text": [
+            "Training Labs",
+            "Твій прогрес починається тут",
+            "Логін",
+            "Введіть логін",
+            "Пароль",
+            "Введіть пароль",
+            "Увійти"
+          ]
+        },
+        {
+          "id": "59:3353",
+          "name": "Layout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [],
+          "text": []
+        },
+        {
+          "id": "136:2297",
+          "name": "Workout Details - Change Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "136:2298",
+              "name": "Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 70
+            },
+            {
+              "id": "136:2311",
+              "name": "Exercise List",
+              "x": 16,
+              "y": 158,
+              "width": 358,
+              "height": 530
+            },
+            {
+              "id": "136:2336",
+              "name": "Button / Primary Container",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Латеральні підйоми кроссовер з-за спини",
+            "4 підходи",
+            "Жим штанги лежачи",
+            "3 підходи",
+            "Метелик лікті",
+            "Пуловер кросовер",
+            "Розгинання на трицепс у блоці пряма рукоятка (статичний блок)",
+            "Біцепс на скам'ї Скотта EZ гриф",
+            "Почати тренування"
+          ]
+        }
+      ],
+      "navigation": [
+        {
+          "id": "59:3117",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2300",
+          "name": "lucide:circle-chevron-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2305",
+          "name": "lucide:ellipsis-vertical",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "135:2247",
+                "overlayRelativePosition": {
+                  "x": -175.99989318847656,
+                  "y": 32.00001907348633
+                },
+                "navigation": "OVERLAY",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2337",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1537",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "1:5",
+      "page": "04 - Prototype",
+      "screens": [
+        {
+          "id": "59:1990",
+          "name": "Workout Completed",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:1991",
+              "name": "Active Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "59:1998",
+              "name": "Workout Content",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 658
+            },
+            {
+              "id": "59:2003",
+              "name": "Workout Footer",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "00:00",
+            "Тренування завершено",
+            "45 хв · 6 вправ · 18 підходів",
+            "До моїх тренувань"
+          ]
+        },
+        {
+          "id": "59:1537",
+          "name": "Active Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:1538",
+              "name": "Active Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "59:1545",
+              "name": "Workout Content",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 658
+            },
+            {
+              "id": "59:1550",
+              "name": "Workout Footer",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "00:00",
+            "Латеральні підйоми кроссовер з-за спини",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Результати попереднього тренування",
+            "Підхід",
+            "Вага",
+            "Од",
+            "Повтори",
+            "Запас",
+            "1",
+            "80",
+            "кг",
+            "10",
+            "2",
+            "84",
+            "8",
+            "3",
+            "82",
+            "4",
+            "max",
+            " ",
+            "Додати підхід",
+            "Видалити підхід",
+            "Жим штанги лежачи",
+            "Метелик лікті",
+            "Завершити тренування"
+          ]
+        },
+        {
+          "id": "59:1501",
+          "name": "Workout Details",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:1502",
+              "name": "Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 70
+            },
+            {
+              "id": "59:1515",
+              "name": "Exercise List",
+              "x": 16,
+              "y": 158,
+              "width": 358,
+              "height": 530
+            },
+            {
+              "id": "59:1522",
+              "name": "Frame 1",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Латеральні підйоми кроссовер з-за спини",
+            "4 підходи",
+            "Жим штанги лежачи",
+            "3 підходи",
+            "Метелик лікті",
+            "Пуловер кросовер",
+            "Розгинання на трицепс у блоці пряма рукоятка (статичний блок)",
+            "Біцепс на скам'ї Скотта EZ гриф",
+            "Почати тренування"
+          ]
+        },
+        {
+          "id": "135:2211",
+          "name": "Workout Details - Change Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "135:2212",
+              "name": "Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 70
+            },
+            {
+              "id": "135:2225",
+              "name": "Exercise List",
+              "x": 16,
+              "y": 158,
+              "width": 358,
+              "height": 530
+            },
+            {
+              "id": "135:2232",
+              "name": "Button / Primary Container",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Латеральні підйоми кроссовер з-за спини",
+            "4 підходи",
+            "Жим штанги лежачи",
+            "3 підходи",
+            "Метелик лікті",
+            "Пуловер кросовер",
+            "Розгинання на трицепс у блоці пряма рукоятка (статичний блок)",
+            "Біцепс на скам'ї Скотта EZ гриф",
+            "Почати тренування"
+          ]
+        },
+        {
+          "id": "136:2354",
+          "name": "Workout Details - Change Workout - Select Workout",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "136:2355",
+              "name": "Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 70
+            },
+            {
+              "id": "136:2368",
+              "name": "Exercise List",
+              "x": 16,
+              "y": 158,
+              "width": 358,
+              "height": 530
+            },
+            {
+              "id": "136:2393",
+              "name": "Button / Primary Container",
+              "x": 16,
+              "y": 752,
+              "width": 358,
+              "height": 68
+            }
+          ],
+          "text": [
+            "Тренування А",
+            "Верх · 6 вправ · ~45 хвилин",
+            "Латеральні підйоми кроссовер з-за спини",
+            "4 підходи",
+            "Жим штанги лежачи",
+            "3 підходи",
+            "Метелик лікті",
+            "Пуловер кросовер",
+            "Розгинання на трицепс у блоці пряма рукоятка (статичний блок)",
+            "Біцепс на скам'ї Скотта EZ гриф",
+            "Почати тренування"
+          ]
+        },
+        {
+          "id": "135:2247",
+          "name": "Action List",
+          "type": "INSTANCE",
+          "width": 200,
+          "height": 172,
+          "children": [
+            {
+              "id": "I135:2247;135:1238",
+              "name": "Action Element",
+              "x": 10,
+              "y": 10,
+              "width": 180,
+              "height": 44
+            },
+            {
+              "id": "I135:2247;135:1244",
+              "name": "Action Element",
+              "x": 10,
+              "y": 64,
+              "width": 180,
+              "height": 44
+            },
+            {
+              "id": "I135:2247;135:1250",
+              "name": "Action Element",
+              "x": 10,
+              "y": 118,
+              "width": 180,
+              "height": 44
+            }
+          ],
+          "text": [
+            "Видалити вправу",
+            "Підняти вгору",
+            "Опустити вниз"
+          ]
+        },
+        {
+          "id": "59:1412",
+          "name": "My Workouts - Workout Created",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "59:1413",
+              "name": "Мої тренування",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "59:1414",
+              "name": "Search Field",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 48
+            },
+            {
+              "id": "59:1458",
+              "name": "Text Button",
+              "x": 16,
+              "y": 142,
+              "width": 358,
+              "height": 40
+            },
+            {
+              "id": "59:1416",
+              "name": "Workout List",
+              "x": 16,
+              "y": 198,
+              "width": 358,
+              "height": 92
+            }
+          ],
+          "text": [
+            "Мої тренування",
+            "Знайти тренування",
+            "Створити тренування",
+            "Тренування A",
+            "Верх 1 вправа ~10 хв"
+          ]
+        },
+        {
+          "id": "58:1138",
+          "name": "Create Workout - 2 Sets",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "58:1139",
+              "name": "Create Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 96
+            },
+            {
+              "id": "58:1145",
+              "name": "Create Workout Content",
+              "x": 16,
+              "y": 184,
+              "width": 358,
+              "height": 505
+            },
+            {
+              "id": "58:1160",
+              "name": "Workout Content Footer",
+              "x": 16,
+              "y": 753,
+              "width": 358,
+              "height": 67
+            }
+          ],
+          "text": [
+            "Створити тренування",
+            "Назва тренування",
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Підхід",
+            "Вага",
+            "Од",
+            "Повтори",
+            "1",
+            " ",
+            "2",
+            "Додати підхід",
+            "Видалити підхід",
+            "Зберегти тренування"
+          ]
+        },
+        {
+          "id": "58:744",
+          "name": "Create Workout - Exercise Added",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "58:745",
+              "name": "Create Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 96
+            },
+            {
+              "id": "58:751",
+              "name": "Create Workout Content",
+              "x": 16,
+              "y": 184,
+              "width": 358,
+              "height": 505
+            },
+            {
+              "id": "58:766",
+              "name": "Workout Content Footer",
+              "x": 16,
+              "y": 753,
+              "width": 358,
+              "height": 67
+            }
+          ],
+          "text": [
+            "Створити тренування",
+            "Назва тренування",
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Підхід",
+            "Вага",
+            "Од",
+            "Повтори",
+            "1",
+            " ",
+            "кг",
+            "фунти",
+            "Додати підхід",
+            "Видалити підхід",
+            "Зберегти тренування"
+          ]
+        },
+        {
+          "id": "58:940",
+          "name": "Create Workout - Empty",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "58:941",
+              "name": "Create Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 96
+            },
+            {
+              "id": "58:947",
+              "name": "Create Workout Content",
+              "x": 16,
+              "y": 184,
+              "width": 358,
+              "height": 505
+            },
+            {
+              "id": "58:962",
+              "name": "Workout Content Footer",
+              "x": 16,
+              "y": 753,
+              "width": 358,
+              "height": 67
+            }
+          ],
+          "text": [
+            "Створити тренування",
+            "Назва тренування",
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Зберегти тренування"
+          ]
+        },
+        {
+          "id": "69:3778",
+          "name": "Exercises",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "69:3779",
+              "name": "Exercises Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "69:3785",
+              "name": "Search Field",
+              "x": 16,
+              "y": 94,
+              "width": 358,
+              "height": 48
+            },
+            {
+              "id": "69:3786",
+              "name": "Exercises Content",
+              "x": 16,
+              "y": 174,
+              "width": 358,
+              "height": 646
+            }
+          ],
+          "text": [
+            "Вправи",
+            "Знайти вправу",
+            "Жим штанги лежачи",
+            "Груди · Трицепс",
+            "Жим гантелей лежачи",
+            "Латеральні підйоми із-за спини",
+            "Дельти",
+            "Присідання зі штангою",
+            "Квадріцепси · Сідниці",
+            "Пуловер кросовер",
+            "Найширший м'яз спини · Трапеція"
+          ]
+        },
+        {
+          "id": "69:3889",
+          "name": "Exercise Details",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "69:3890",
+              "name": "Exercise Details Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 146
+            },
+            {
+              "id": "69:3898",
+              "name": "Історія виконання",
+              "x": 99,
+              "y": 202,
+              "width": 192,
+              "height": 26
+            },
+            {
+              "id": "69:3899",
+              "name": "Exercise Details Content",
+              "x": 16,
+              "y": 260,
+              "width": 358,
+              "height": 560
+            }
+          ],
+          "text": [
+            "Латеральні підйоми кросовер із-за спини",
+            "Плечі",
+            "Історія виконання",
+            "27 вересня 2026",
+            "Тренування А",
+            "Підхід",
+            "1",
+            "2",
+            "3",
+            "4",
+            "Вага",
+            "80",
+            "Од",
+            "кг",
+            "Повтори",
+            "15",
+            "Запас",
+            "10 жовтня 2026",
+            "Тренування A",
+            "15 жовтня 2026"
+          ]
+        },
+        {
+          "id": "69:4084",
+          "name": "Home",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "69:4085",
+              "name": "Home Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 62
+            },
+            {
+              "id": "69:4088",
+              "name": "Home Content",
+              "x": 16,
+              "y": 118,
+              "width": 358,
+              "height": 646
+            },
+            {
+              "id": "94:2135",
+              "name": "Home Footer",
+              "x": 16,
+              "y": 796,
+              "width": 358,
+              "height": 24
+            }
+          ],
+          "text": [
+            "Training Labs",
+            "Тренуйся. Відстежуй. Прогресуй",
+            "Мої тренування",
+            "Переглядай та запускай свої тренування",
+            "Створити тренування",
+            "Створи нове тренування та додай вправи",
+            "Прогрес",
+            "Переглядай результати та динаміку тренувань",
+            "Вправи",
+            "Переглядай та керуй списком вправ",
+            "повернутися до авторизації"
+          ]
+        },
+        {
+          "id": "69:4136",
+          "name": "My Workouts",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "87:4217",
+              "name": "My Workout Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 38
+            },
+            {
+              "id": "69:4138",
+              "name": "Search Field",
+              "x": 16,
+              "y": 78,
+              "width": 358,
+              "height": 48
+            },
+            {
+              "id": "69:4139",
+              "name": "Text Button",
+              "x": 16,
+              "y": 142,
+              "width": 358,
+              "height": 40
+            },
+            {
+              "id": "69:4140",
+              "name": "Workout List",
+              "x": 16,
+              "y": 198,
+              "width": 358,
+              "height": 300
+            }
+          ],
+          "text": [
+            "Мої тренування",
+            "Знайти тренування",
+            "Створити тренування",
+            "Тренування A",
+            "Верх 6 вправ ~45 хв",
+            "Тренування B",
+            "Низ 6 вправ ~45 хв",
+            "Тренування C"
+          ]
+        },
+        {
+          "id": "75:4194",
+          "name": "Progress",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "75:4195",
+              "name": "Progress Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 66
+            },
+            {
+              "id": "75:4203",
+              "name": "Progress Content",
+              "x": 16,
+              "y": 122,
+              "width": 358,
+              "height": 698
+            }
+          ],
+          "text": [
+            "Прогрес",
+            "Дивись, як ти стаєш сильнішим"
+          ]
+        },
+        {
+          "id": "94:1174",
+          "name": "Login Page",
+          "type": "FRAME",
+          "width": 390,
+          "height": 844,
+          "children": [
+            {
+              "id": "94:1175",
+              "name": "Login Page Header",
+              "x": 16,
+              "y": 24,
+              "width": 358,
+              "height": 102
+            },
+            {
+              "id": "94:1178",
+              "name": "Login Main",
+              "x": 16,
+              "y": 190,
+              "width": 358,
+              "height": 252
+            },
+            {
+              "id": "94:1183",
+              "name": "Background",
+              "x": 0,
+              "y": 464,
+              "width": 390,
+              "height": 380
+            }
+          ],
+          "text": [
+            "Training Labs",
+            "Твій прогрес починається тут",
+            "Логін",
+            "Введіть логін",
+            "Пароль",
+            "Введіть пароль",
+            "Увійти"
+          ]
+        }
+      ],
+      "navigation": [
+        {
+          "id": "59:2004",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "59:1551",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1990",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "59:1504",
+          "name": "lucide:circle-chevron-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "59:1509",
+          "name": "lucide:ellipsis-vertical",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "135:2211",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            },
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "135:2247",
+                "overlayRelativePosition": {
+                  "x": -176,
+                  "y": -957
+                },
+                "navigation": "OVERLAY",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "59:1523",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1537",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "135:2214",
+          "name": "lucide:circle-chevron-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2274",
+          "name": "lucide:circle",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "136:2354",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            },
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "135:2247",
+                "overlayRelativePosition": {
+                  "x": 818.9998168945312,
+                  "y": -112.0000228881836
+                },
+                "navigation": "OVERLAY",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "135:2233",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1537",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2357",
+          "name": "lucide:circle-chevron-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "136:2394",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1537",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I59:1417;14:786",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1501",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "58:1140",
+          "name": "lucide:circle-arrow-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4136",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "58:1361",
+          "name": "lucide:trash",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:940",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "58:1376",
+          "name": "Text Button Drop",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:744",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "58:1161",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "59:1412",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I58:759;39:1245",
+          "name": "lucide:trash",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:940",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I58:759;39:1428",
+          "name": "Text Button",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:1138",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I58:953;39:1237",
+          "name": "lucide:circle-plus",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:744",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:3789",
+          "name": "Exercise List Item",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3889",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:3789;59:3252",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3889",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:3891",
+          "name": "lucide:circle-arrow-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3778",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:4089",
+          "name": "Home Menu Card",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4136",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4089;59:3152",
+          "name": "Icon / Dumbbell",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4136",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4089;59:3143",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4136",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:4090",
+          "name": "Home Menu Card",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:940",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4090;59:3152",
+          "name": "Icon / Plus",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:940",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4090;59:3143",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "58:940",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:4091",
+          "name": "Home Menu Card",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "75:4194",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4091;59:3152",
+          "name": "Icon / Chart",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "75:4194",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4091;59:3143",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "75:4194",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "69:4092",
+          "name": "Home Menu Card",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3778",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4092;59:3152",
+          "name": "Icon / List",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3778",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "I69:4092;59:3143",
+          "name": "lucide:circle-chevron-right",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:3778",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "94:2135",
+          "name": "Home Footer",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "94:1174",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "94:2137",
+          "name": "Group",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "94:1174",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "87:4218",
+          "name": "lucide:circle-chevron-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4084",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "75:4196",
+          "name": "lucide:circle-arrow-left",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4084",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "94:1182",
+          "name": "Button / Primary",
+          "reactions": [
+            {
+              "trigger": {
+                "type": "ON_CLICK"
+              },
+              "action": {
+                "type": "NODE",
+                "destinationId": "69:4084",
+                "navigation": "NAVIGATE",
+                "transition": null,
+                "resetVideoPosition": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
