@@ -1,9 +1,11 @@
+import { WEIGHT_UNIT_LABELS, type WeightUnit } from "@/lib/weight-unit";
+
 type HistorySet = {
-  number: number;
-  weight: number;
-  unit: string;
-  reps: number;
-  reserve: number;
+  setNumber: number;
+  weight: number | null;
+  unit: WeightUnit;
+  reps: number | null;
+  rir: number | null;
 };
 
 type ExerciseHistoryCardProps = {
@@ -26,11 +28,11 @@ export function ExerciseHistoryCard({ date, dateTime, workoutName, sets }: Exerc
             <span role="columnheader" key={label} className="flex min-w-0 items-center justify-center whitespace-nowrap">{label}</span>
           ))}
         </div>
-        {sets.map(({ number, weight, unit, reps, reserve }) => (
-          <div role="row" key={number} className="grid h-11 grid-cols-5 gap-1">
-            <span role="cell" className="flex items-center justify-center">{number}</span>
-            {[weight, unit, reps, reserve].map((value, index) => (
-              <span role="cell" key={index} className="flex min-w-0 items-center justify-center rounded-8 bg-primary-100 text-neutral-950">{value}</span>
+        {sets.map(({ setNumber, weight, unit, reps, rir }) => (
+          <div role="row" key={setNumber} className="grid h-11 grid-cols-5 gap-1">
+            <span role="cell" className="flex items-center justify-center">{setNumber}</span>
+            {[weight, WEIGHT_UNIT_LABELS[unit], reps, rir].map((value, index) => (
+              <span role="cell" key={index} className="flex min-w-0 items-center justify-center rounded-8 bg-primary-100 text-neutral-950">{value ?? "—"}</span>
             ))}
           </div>
         ))}
