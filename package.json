@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --import tsx --test tests/*.test.mjs",
+    "auth:provision": "tsx scripts/provision-user.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
