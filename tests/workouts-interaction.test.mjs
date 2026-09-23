@@ -12,7 +12,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const { createRoot } = await import("react-dom/client");
 const { AppRouterContext } = await import("next/dist/shared/lib/app-router-context.shared-runtime.js");
-const { WorkoutsClient } = await import("../app/workouts/workouts-client.tsx");
+const { WorkoutsClient } = await import("../app/(authenticated)/workouts/workouts-client.tsx");
 
 let root;
 let container;

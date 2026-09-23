@@ -1,11 +1,22 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/current-user";
-import { authenticatedLoginDestination } from "@/lib/login-page";
+import {
+  authenticatedLoginDestination,
+  safeNextPath,
+} from "@/lib/login-page";
 import LoginForm from "./login-form";
 
-export default async function Login() {
-  const destination = authenticatedLoginDestination(await getCurrentUser());
+export default async function Login({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const nextPath = safeNextPath((await searchParams).next);
+  const destination = authenticatedLoginDestination(
+    await getCurrentUser(),
+    nextPath,
+  );
   if (destination) redirect(destination);
 
   return (
@@ -14,7 +25,7 @@ export default async function Login() {
         <h1 className="type-heading-xl whitespace-nowrap">Training Labs</h1>
         <p className="type-body-l">Твій прогрес починається тут</p>
       </header>
-      <LoginForm />
+      <LoginForm nextPath={nextPath ?? "/"} />
       {/* Figma background 94:1171 exported with its crop and 25% opacity baked in. */}
       <Image
         src="/images/login/athlete.png"

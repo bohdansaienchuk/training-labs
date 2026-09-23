@@ -14,7 +14,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot, hydrateRoot } = await import("react-dom/client");
 const { renderToString } = await import("react-dom/server");
 const { AppRouterContext } = await import("next/dist/shared/lib/app-router-context.shared-runtime.js");
-const { default: ActiveWorkoutClient } = await import("../app/workouts/[id]/active/active-workout-client.tsx");
+const { default: ActiveWorkoutClient } = await import("../app/(authenticated)/workouts/[id]/active/active-workout-client.tsx");
 
 let root;
 let container;

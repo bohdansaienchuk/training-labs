@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/input";
 import { authClient } from "@/lib/auth-client";
+import { loginSuccessDestination } from "@/lib/login-page";
 import {
   classifySignInError,
   INVALID_CREDENTIALS_MESSAGE,
@@ -123,13 +124,14 @@ export function LoginFormControl({
   );
 }
 
-export default function LoginForm() {
+export default function LoginForm({ nextPath = "/" }: { nextPath?: string }) {
   const router = useRouter();
+  const destination = loginSuccessDestination(nextPath);
   return (
     <LoginFormControl
       authenticate={authenticateWithBetterAuth}
       onAuthenticated={() => {
-        router.replace("/");
+        router.replace(destination);
         router.refresh();
       }}
     />

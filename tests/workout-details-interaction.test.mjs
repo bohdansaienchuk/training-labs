@@ -11,9 +11,9 @@ globalThis.self = dom.window;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot } = await import("react-dom/client");
 const { AppRouterContext } = await import("next/dist/shared/lib/app-router-context.shared-runtime.js");
-const { default: WorkoutDetails } = await import("../app/workouts/[id]/workout-details-client.tsx");
-const { default: ActiveWorkout } = await import("../app/workouts/[id]/active/active-workout-client.tsx");
-const { default: EditWorkout } = await import("../app/workouts/[id]/edit/edit-workout-client.tsx");
+const { default: WorkoutDetails } = await import("../app/(authenticated)/workouts/[id]/workout-details-client.tsx");
+const { default: ActiveWorkout } = await import("../app/(authenticated)/workouts/[id]/active/active-workout-client.tsx");
+const { default: EditWorkout } = await import("../app/(authenticated)/workouts/[id]/edit/edit-workout-client.tsx");
 const { WorkoutDraftProvider, useWorkoutDraft } = await import("../components/workout-draft-provider.tsx");
 
 let root;
