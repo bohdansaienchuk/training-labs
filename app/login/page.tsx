@@ -1,21 +1,20 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Input } from "@/components/input";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/current-user";
+import { authenticatedLoginDestination } from "@/lib/login-page";
+import LoginForm from "./login-form";
 
-export default function Login() {
+export default async function Login() {
+  const destination = authenticatedLoginDestination(await getCurrentUser());
+  if (destination) redirect(destination);
+
   return (
     <main className="relative mx-auto flex min-h-[844px] w-full max-w-[390px] flex-col gap-16 overflow-hidden bg-neutral-950 px-4 py-6">
       <header className="relative z-10 flex shrink-0 flex-col items-center gap-2 px-8 pt-8 text-center text-[#ffffff]">
         <h1 className="type-heading-xl whitespace-nowrap">Training Labs</h1>
         <p className="type-body-l">Твій прогрес починається тут</p>
       </header>
-      <div className="relative z-10 flex w-full shrink-0 flex-col items-center gap-8 px-8">
-        <Input label="Логін" placeholder="Введіть логін" type="text" autoComplete="username" />
-        <Input label="Пароль" placeholder="Введіть пароль" type="password" autoComplete="current-password" />
-        <Link href="/" className="type-button inline-flex min-h-12 items-center justify-center rounded-12 bg-primary-500 px-6 py-3.5 text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500">
-          Увійти
-        </Link>
-      </div>
+      <LoginForm />
       {/* Figma background 94:1171 exported with its crop and 25% opacity baked in. */}
       <Image
         src="/images/login/athlete.png"
