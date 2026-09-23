@@ -58,9 +58,9 @@ beforeEach(async () => {
   pushed = [];
   refreshes = 0;
   workouts = [
-    { id: "101", name: "Workout A", exerciseCount: 1, setCount: 2 },
-    { id: "205", name: "Workout B", exerciseCount: 2, setCount: 4 },
-    { id: "309", name: "Workout C", exerciseCount: 3, setCount: 6 },
+    { id: "101", name: "Workout A", exerciseCount: 6, setCount: 18, repCount: 180 },
+    { id: "205", name: "Workout B", exerciseCount: 2, setCount: 4, repCount: 40 },
+    { id: "309", name: "Workout C", exerciseCount: 3, setCount: 6, repCount: 60 },
   ];
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -78,6 +78,7 @@ afterEach(async () => {
 });
 
 test("three-dot opens the portaled workout Action List and selection uses stable database IDs without navigation", async () => {
+  assert.equal(document.querySelector('[data-workout-link="101"] p').textContent, "6 вправ · 18 підходів · 180 повторів");
   assert.deepEqual([...document.querySelectorAll("[data-workout-link]")].map((link) => [link.dataset.workoutLink, link.getAttribute("href")]), [
     ["101", "/workouts/101"], ["205", "/workouts/205"], ["309", "/workouts/309"],
   ]);

@@ -10,12 +10,14 @@ import { WorkoutCard } from "@/components/workout-card";
 import { WorkoutListMenu, type WorkoutListAction } from "@/components/workout-list-menu";
 import { matchesSearch } from "@/lib/search";
 import type { WorkoutDeleteResult } from "@/lib/workout-delete";
+import { pluralizeUk } from "@/lib/pluralize-uk";
 
 type WorkoutListItem = {
   id: string;
   name: string;
   exerciseCount: number;
   setCount: number;
+  repCount: number;
 };
 
 type WorkoutsClientProps = {
@@ -23,8 +25,12 @@ type WorkoutsClientProps = {
   deleteAction: (id: string) => Promise<WorkoutDeleteResult>;
 };
 
-function workoutSummary({ exerciseCount, setCount }: WorkoutListItem) {
-  return `${exerciseCount} вправ · ${setCount} підходів`;
+function workoutSummary({ exerciseCount, setCount, repCount }: WorkoutListItem) {
+  return [
+    pluralizeUk(exerciseCount, { one: "вправа", few: "вправи", many: "вправ" }),
+    pluralizeUk(setCount, { one: "підхід", few: "підходи", many: "підходів" }),
+    pluralizeUk(repCount, { one: "повтор", few: "повтори", many: "повторів" }),
+  ].join(" · ");
 }
 
 export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) {

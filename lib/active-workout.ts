@@ -1,4 +1,5 @@
 import type { WeightUnit } from "./weight-unit";
+import { pluralizeUk } from "./pluralize-uk";
 
 export type PerformedSetInput = {
   id: string;
@@ -91,6 +92,5 @@ export function completedWorkoutBackHref(workoutId: string | null): string {
 }
 
 export function countLabel(count: number, labels: [string, string, string]): string {
-  const plural = new Intl.PluralRules("uk").select(count);
-  return `${count} ${plural === "one" ? labels[0] : plural === "few" ? labels[1] : labels[2]}`;
+  return pluralizeUk(count, { one: labels[0], few: labels[1], many: labels[2] });
 }

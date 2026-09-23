@@ -1,4 +1,5 @@
 import type { WeightUnit } from "./weight-unit";
+import { pluralizeUk } from "./pluralize-uk";
 
 export type PlannedSet = {
   id: string;
@@ -63,9 +64,7 @@ export function newActiveSet(id: string, position: number, weightUnit: WeightUni
 
 export function workoutSummary(workout: Workout): string {
   const count = workout.exercises.length;
-  const plural = new Intl.PluralRules("uk").select(count);
-  const label = plural === "one" ? "вправа" : plural === "few" ? "вправи" : "вправ";
-  return [workout.focus, `${count} ${label}`, workout.estimatedMinutes ? `~${workout.estimatedMinutes} хвилин` : null].filter(Boolean).join(" · ");
+  return [workout.focus, pluralizeUk(count, { one: "вправа", few: "вправи", many: "вправ" }), workout.estimatedMinutes ? `~${workout.estimatedMinutes} хвилин` : null].filter(Boolean).join(" · ");
 }
 
 // Positions are one-based and contiguous; stable IDs and prescriptions survive edits.

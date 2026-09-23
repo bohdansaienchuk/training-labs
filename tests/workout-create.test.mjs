@@ -117,8 +117,10 @@ test("Create atomically persists the database exercise IDs, name, membership, or
   ]);
   assert.equal(saved.id, "100");
   assert.deepEqual(saved.exercises.map((exercise) => [exercise.exerciseId, exercise.position, exercise.plannedSets.length]), [["10", 1, 1], ["12", 2, 2]]);
-  assert.deepEqual(workoutListItems([{ id: 100, name: saved.name, exercises: saved.exercises.map((exercise) => ({ _count: { sets: exercise.plannedSets.length } })) }]), [
-    { id: "100", name: "Training B", exerciseCount: 2, setCount: 3 },
+  assert.deepEqual(workoutListItems([{ id: 100, name: saved.name, exercises: saved.exercises.map((exercise) => ({
+    sets: exercise.plannedSets.map((set) => ({ targetReps: set.reps })),
+  })) }]), [
+    { id: "100", name: "Training B", exerciseCount: 2, setCount: 3, repCount: 30 },
   ]);
 });
 

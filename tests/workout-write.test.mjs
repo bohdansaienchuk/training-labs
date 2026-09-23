@@ -111,8 +111,10 @@ test("Save commits edited template data to database state, not only the returned
     [204, 101, 2, 60, 7, 2],
     [205, 103, 1, 35, 12, 1],
   ]);
-  const list = workoutListItems([{ id: 2048, name: saved.name, exercises: saved.exercises.map((entry) => ({ _count: { sets: entry.plannedSets.length } })) }]);
-  assert.deepEqual(list, [{ id: "2048", name: "Training B", exerciseCount: 3, setCount: 4 }]);
+  const list = workoutListItems([{ id: 2048, name: saved.name, exercises: saved.exercises.map((entry) => ({
+    sets: entry.plannedSets.map((set) => ({ targetReps: set.reps })),
+  })) }]);
+  assert.deepEqual(list, [{ id: "2048", name: "Training B", exerciseCount: 3, setCount: 4, repCount: 34 }]);
   const reopened = await db.transaction((tx) => tx.workout.findUnique({ where: { id: 2048 } }));
   assert.equal(reopened.name, saved.name);
   assert.deepEqual(reopened.exercises.map((entry) => entry.position).sort(), [1, 2, 3]);
@@ -126,7 +128,7 @@ test("save deletes removed exercises and sets, and fresh list data reflects the 
   const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited));
   assert.deepEqual(saved.exercises.map((entry) => entry.id), ["101"]);
   assert.deepEqual(db.snapshot().sets.map((set) => set.id), [201]);
-  assert.equal(workoutListItems([{ id: 2048, name: saved.name, exercises: [{ _count: { sets: 1 } }] }])[0].exerciseCount, 1);
+  assert.equal(workoutListItems([{ id: 2048, name: saved.name, exercises: [{ sets: [{ targetReps: 10 }] }] }])[0].exerciseCount, 1);
 });
 
 test("transaction rollback leaves the saved template unchanged on a related-record failure", async () => {
