@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Prisma } from "@prisma/client";
-import { resolveWorkout, serializeWorkout, workoutInclude } from "../lib/workout-read.ts";
+import { resolveWorkoutForUser, serializeWorkout, workoutInclude } from "../lib/workout-read.ts";
 import { initializeActiveSets } from "../lib/workout-template.ts";
 
 export function databaseWorkout(id = 1) {
@@ -21,8 +21,8 @@ export function databaseWorkout(id = 1) {
 test("route ID resolves the database record, including IDs that overlap old mock IDs", async () => {
   for (const id of [1, 2048]) {
     let query;
-    const result = await resolveWorkout(String(id), async (args) => { query = args; return databaseWorkout(id); });
-    assert.deepEqual(query, { where: { id }, include: workoutInclude });
+    const result = await resolveWorkoutForUser(String(id), 5, async (args) => { query = args; return databaseWorkout(id); });
+    assert.deepEqual(query, { where: { id, userId: 5 }, include: workoutInclude });
     assert.equal(query.include.exercises.orderBy.position, "asc");
     assert.equal(query.include.exercises.include.sets.orderBy.setNumber, "asc");
     assert.equal(result.id, String(id));
@@ -32,18 +32,18 @@ test("route ID resolves the database record, including IDs that overlap old mock
 });
 
 test("absent database ID throws Next notFound even when a mock ID would exist", async () => {
-  await assert.rejects(resolveWorkout("1", async () => null), { digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
+  await assert.rejects(resolveWorkoutForUser("1", 5, async () => null), { digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
 });
 
 test("invalid, UUID, fractional and out-of-range IDs are rejected before querying", async () => {
   for (const id of ["0", "-1", "01", "1.5", "1e2", " 1", "draft", "d81e74c5-b10d-473d-a702-101084701e4c", "2147483648"]) {
-    await assert.rejects(resolveWorkout(id, async () => { assert.fail("invalid ID must not reach Prisma"); }), { digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
+    await assert.rejects(resolveWorkoutForUser(id, 5, async () => { assert.fail("invalid ID must not reach Prisma"); }), { digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
   }
 });
 
 test("database errors propagate rather than becoming a mock workout or a 404", async () => {
   const failure = new Error("Database unavailable");
-  await assert.rejects(resolveWorkout("1", async () => { throw failure; }), error => error === failure);
+  await assert.rejects(resolveWorkoutForUser("1", 5, async () => { throw failure; }), error => error === failure);
 });
 
 test("serialization retains IDs, category, order, set numbers, Decimal/null and planned RIR", () => {

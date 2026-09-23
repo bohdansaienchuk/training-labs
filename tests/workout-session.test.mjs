@@ -291,12 +291,12 @@ test("Finish rejects empty/partial rows atomically, then completes valid sets on
   assert.equal(await db.transaction((tx) => finishWorkoutSession(tx, "10", id, 7, inputs, completedAt)), id);
   assert.equal(await db.transaction((tx) => finishWorkoutSession(tx, "10", id, 7, inputs, completedAt)), id);
   assert.equal(db.snapshot().performedSets.every((set) => set.completed), true);
-  const completed = await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", id, 7));
+  const completed = await db.transaction((tx) => loadCompletedWorkoutSession(tx, id, 7));
   assert.deepEqual({ name: completed.workoutName, exercises: completed.exerciseCount, sets: completed.setCount }, { name: "Силове тренування", exercises: 2, sets: 3 });
   assert.equal(completedDurationMinutes(completed.startedAt, completed.completedAt), 45);
   assert.equal(elapsedTimer(completed.startedAt, new Date(completed.completedAt).getTime()), "45:59");
   assert.equal(await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7)), null);
-  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, "11", id, 7))).id, id, "session ID and owner are authoritative for completed history");
+  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, id, 7))).id, id, "session ID and owner are authoritative for completed history");
 });
 
 test("Session name is snapshotted once, survives template rename/deletion, and Completed remains readable", async () => {
@@ -309,7 +309,7 @@ test("Session name is snapshotted once, survives template rename/deletion, and C
   ));
 
   db.mutate((state) => { state.workouts[0].name = "Нова назва"; });
-  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 7))).workoutName, "Силове тренування");
+  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, firstId, 7))).workoutName, "Силове тренування");
 
   const secondId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
   assert.equal(db.snapshot().sessions.find((session) => session.id === Number(secondId)).workoutName, "Нова назва");
@@ -323,10 +323,10 @@ test("Session name is snapshotted once, survives template rename/deletion, and C
     for (const session of state.sessions) session.workoutId = null;
   });
 
-  const orphaned = await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 7));
+  const orphaned = await db.transaction((tx) => loadCompletedWorkoutSession(tx, firstId, 7));
   assert.equal(orphaned.workoutId, null);
   assert.equal(orphaned.workoutName, "Силове тренування");
-  assert.equal(await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 8)), null);
+  assert.equal(await db.transaction((tx) => loadCompletedWorkoutSession(tx, firstId, 8)), null);
 });
 
 test("Previous results use the latest completed session, exclude current, and show no mock history", async () => {

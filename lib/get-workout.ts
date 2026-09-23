@@ -1,7 +1,9 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { resolveWorkout } from "@/lib/workout-read";
+import { resolveWorkoutForUser } from "@/lib/workout-read";
 
-export function getWorkout(id: string) {
-  return resolveWorkout(id, (args) => prisma.workout.findUnique(args));
+export function getWorkoutForUser(id: string, authenticatedUserId: number) {
+  return resolveWorkoutForUser(id, authenticatedUserId, (args) =>
+    prisma.workout.findFirst(args),
+  );
 }

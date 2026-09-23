@@ -12,6 +12,19 @@ export const workoutListSelect = {
 
 export type WorkoutListRecord = Prisma.WorkoutGetPayload<{ select: typeof workoutListSelect }>;
 
+type WorkoutListReader = Pick<Prisma.TransactionClient, "workout">;
+
+export function loadWorkoutsForUser(
+  reader: WorkoutListReader,
+  authenticatedUserId: number,
+): Promise<WorkoutListRecord[]> {
+  return reader.workout.findMany({
+    where: { userId: authenticatedUserId },
+    orderBy: { createdAt: "desc" },
+    select: workoutListSelect,
+  });
+}
+
 export function workoutListItems(workouts: readonly WorkoutListRecord[]) {
   return workouts.map((workout) => ({
     id: String(workout.id),

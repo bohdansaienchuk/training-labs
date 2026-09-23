@@ -1,17 +1,14 @@
 import { connection } from "next/server";
+import { requireUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { WorkoutsClient } from "./workouts-client";
-import { workoutListItems, workoutListSelect } from "@/lib/workout-list";
+import { loadWorkoutsForUser, workoutListItems } from "@/lib/workout-list";
 import { deleteWorkoutAction } from "./actions";
 
 export default async function MyWorkoutsPage() {
   await connection();
-  const workouts = await prisma.workout.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: workoutListSelect,
-  });
+  const currentUser = await requireUser();
+  const workouts = await loadWorkoutsForUser(prisma, currentUser.id);
 
   const list = workoutListItems(workouts);
   const listVersion = list.map((workout) => `${workout.id}:${workout.name}:${workout.exerciseCount}:${workout.setCount}:${workout.repCount}`).join("|");

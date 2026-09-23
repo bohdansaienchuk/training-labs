@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Prisma } from "@prisma/client";
 import { createWorkoutTemplate, updateWorkoutTemplate } from "../lib/workout-write.ts";
-import { resolveWorkout } from "../lib/workout-read.ts";
+import { resolveWorkoutForUser } from "../lib/workout-read.ts";
 import { initializeActiveSets } from "../lib/workout-template.ts";
 import { workoutListItems } from "../lib/workout-list.ts";
 
@@ -127,7 +127,7 @@ test("Create atomically persists the database exercise IDs, name, membership, or
 test("a created database-shaped workout loads in Details/Active shape and remains compatible with Edit persistence", async () => {
   const db = database();
   const created = await db.transaction((tx) => createWorkoutTemplate(tx, createDraft(), 7));
-  const reloaded = await resolveWorkout(created.id, (args) => db.transaction((tx) => tx.workout.findUnique(args)));
+  const reloaded = await resolveWorkoutForUser(created.id, 7, (args) => db.transaction((tx) => tx.workout.findUnique(args)));
   assert.deepEqual(reloaded, created, "the regular /workouts/[id] read path must load a newly created template");
   assert.deepEqual(reloaded.exercises.flatMap((exercise) => initializeActiveSets(exercise.plannedSets).map((set) => [exercise.name, set.position, set.actualWeight, set.actualReps, set.planned.rir])), [
     ["Bench", 1, 50, null, 0],

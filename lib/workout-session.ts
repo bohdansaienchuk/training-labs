@@ -240,7 +240,13 @@ export async function loadActiveWorkoutSession(tx: Transaction, workoutIdValue: 
   const sessionId = databaseId(sessionIdValue);
   if (!workoutId || !sessionId) return null;
   const session = await tx.workoutSession.findFirst({
-    where: { id: sessionId, workoutId, userId, completedAt: null },
+    where: {
+      id: sessionId,
+      workoutId,
+      userId,
+      completedAt: null,
+      workout: { userId },
+    },
     include: {
       workout: { select: { name: true } },
       exercises: { orderBy: { position: "asc" }, include: { exercise: true, sets: { orderBy: { setNumber: "asc" } } } },
@@ -280,7 +286,7 @@ export async function loadActiveWorkoutSession(tx: Transaction, workoutIdValue: 
   };
 }
 
-export async function loadCompletedWorkoutSession(tx: Transaction, _workoutIdValue: string, sessionIdValue: string, userId: number): Promise<CompletedWorkoutSession | null> {
+export async function loadCompletedWorkoutSession(tx: Transaction, sessionIdValue: string, userId: number): Promise<CompletedWorkoutSession | null> {
   const sessionId = databaseId(sessionIdValue);
   if (!sessionId) return null;
   const session = await tx.workoutSession.findFirst({

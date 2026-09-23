@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { completedDurationMinutes, completedWorkoutBackHref, countLabel, elapsedTimer } from "@/lib/active-workout";
-import { getCompletedWorkoutSession } from "@/lib/get-workout-session";
+import { requireUser } from "@/lib/current-user";
+import { getCompletedWorkoutSessionForUser } from "@/lib/get-workout-session";
 
-export default async function WorkoutCompleted({ params, searchParams }: PageProps<"/workouts/[id]/completed">) {
-  const { id } = await params;
+export default async function WorkoutCompleted({ searchParams }: PageProps<"/workouts/[id]/completed">) {
   const query = await searchParams;
   const sessionId = Array.isArray(query.session) ? query.session[0] : query.session;
-  const session = await getCompletedWorkoutSession(id, sessionId ?? "");
+  const currentUser = await requireUser();
+  const session = await getCompletedWorkoutSessionForUser(sessionId ?? "", currentUser.id);
   const backHref = completedWorkoutBackHref(session.workoutId);
   const backLabel = session.workoutId ? "До деталей тренування" : "До моїх тренувань";
   const duration = completedDurationMinutes(session.startedAt, session.completedAt);

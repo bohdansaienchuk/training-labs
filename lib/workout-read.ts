@@ -10,7 +10,10 @@ export const workoutInclude = {
 } as const satisfies Prisma.WorkoutInclude;
 
 type DatabaseWorkout = Prisma.WorkoutGetPayload<{ include: typeof workoutInclude }>;
-type FindWorkout = (args: { where: { id: number }; include: typeof workoutInclude }) => Promise<DatabaseWorkout | null>;
+type FindWorkoutForUser = (args: {
+  where: { id: number; userId: number };
+  include: typeof workoutInclude;
+}) => Promise<DatabaseWorkout | null>;
 
 export function serializeWorkout(workout: DatabaseWorkout): Workout {
   return {
@@ -37,9 +40,16 @@ export function serializeWorkout(workout: DatabaseWorkout): Workout {
 
 // Inject only the read operation so real Prisma query arguments and 404 behavior
 // can be exercised without database credentials or writes in tests.
-export async function resolveWorkout(id: string, findWorkout: FindWorkout): Promise<Workout> {
+export async function resolveWorkoutForUser(
+  id: string,
+  authenticatedUserId: number,
+  findWorkout: FindWorkoutForUser,
+): Promise<Workout> {
   if (!/^[1-9]\d*$/.test(id) || Number(id) > 2147483647) notFound();
-  const workout = await findWorkout({ where: { id: Number(id) }, include: workoutInclude });
+  const workout = await findWorkout({
+    where: { id: Number(id), userId: authenticatedUserId },
+    include: workoutInclude,
+  });
   if (!workout) notFound();
   return serializeWorkout(workout);
 }

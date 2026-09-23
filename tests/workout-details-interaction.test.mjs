@@ -305,9 +305,9 @@ test("menu portal escapes clipped ancestors and retains design anchor on resize/
 });
 
 test("database-origin ID 1 displays its own name and data without a legacy provider", async () => {
-  const { resolveWorkout } = await import("../lib/workout-read.ts");
+  const { resolveWorkoutForUser } = await import("../lib/workout-read.ts");
   const { Prisma } = await import("@prisma/client");
-  const loaded = await resolveWorkout("1", async ({ where }) => ({
+  const loaded = await resolveWorkoutForUser("1", 5, async ({ where }) => ({
     id: where.id, name: "Database-only workout", exercises: [{
       id: 901, exerciseId: 801, position: 1,
       exercise: { name: "Database-only exercise", category: "Груди" },

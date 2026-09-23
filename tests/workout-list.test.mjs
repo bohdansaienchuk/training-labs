@@ -1,6 +1,29 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { workoutListItems, workoutListSelect } from "../lib/workout-list.ts";
+import { loadWorkoutsForUser, workoutListItems, workoutListSelect } from "../lib/workout-list.ts";
+
+test("My Workouts reader scopes the database query to the authenticated user", async () => {
+  const records = [
+    { id: 10, userId: 7, name: "Owned", createdAt: new Date("2026-09-20"), exercises: [] },
+    { id: 11, userId: 8, name: "Foreign", createdAt: new Date("2026-09-21"), exercises: [] },
+  ];
+  let query;
+  const reader = {
+    workout: {
+      findMany: async (args) => {
+        query = args;
+        return records.filter((workout) => workout.userId === args.where.userId);
+      },
+    },
+  };
+
+  assert.deepEqual((await loadWorkoutsForUser(reader, 7)).map((workout) => workout.id), [10]);
+  assert.deepEqual(query, {
+    where: { userId: 7 },
+    orderBy: { createdAt: "desc" },
+    select: workoutListSelect,
+  });
+});
 
 test("workout summary counts template exercises, planned sets, and varying planned repetitions", () => {
   const [summary] = workoutListItems([{
