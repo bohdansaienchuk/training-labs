@@ -30,7 +30,7 @@ const rows = () => [...document.querySelectorAll("[data-workout-select]")];
 const action = (label) => [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes(label));
 const order = () => [...document.querySelectorAll('[aria-label="Мої тренування"] h2')].map((heading) => heading.textContent);
 
-function screen(deleteAction = async (id) => id) {
+function screen(deleteAction = async (id) => ({ ok: true, value: id })) {
   return React.createElement(AppRouterContext.Provider, { value: router },
     React.createElement(WorkoutsClient, { workouts, deleteAction }),
   );
@@ -211,7 +211,7 @@ test("successful Delete submits the selected ID once, removes it, refreshes data
   await act(async () => { action("Видалити тренування").click(); action("Видалити тренування").click(); });
   assert.deepEqual(deleted, ["205"]);
   assert.ok(menu());
-  await act(async () => finishDelete("205"));
+  await act(async () => finishDelete({ ok: true, value: "205" }));
   assert.equal(menu(), null);
   assert.equal(rows().length, 0);
   assert.deepEqual(order(), ["Workout A", "Workout C"]);
@@ -220,14 +220,22 @@ test("successful Delete submits the selected ID once, removes it, refreshes data
   assert.deepEqual(pushed, []);
 });
 
-test("history-blocked Delete preserves the selected workout and menu for retry without navigating", async () => {
-  await act(async () => root.render(screen(async () => { throw new Error("Workout has history"); })));
+test("active-session-blocked Delete preserves selection and shows the specific conflict message", async () => {
+  await act(async () => root.render(screen(async () => ({ ok: false, code: "WORKOUT_HAS_ACTIVE_SESSION", error: "conflict" }))));
   await click(trigger()); await click(rows().find((row) => row.dataset.workoutId === "205"));
   await click(action("Видалити тренування"));
   await flush();
   assert.ok(menu());
   assert.equal(rows().find((row) => row.dataset.workoutId === "205").getAttribute("aria-pressed"), "true");
   assert.deepEqual(order(), ["Workout A", "Workout B", "Workout C"]);
-  assert.equal(document.querySelector('[role="alert"]').textContent, "Не вдалося видалити тренування");
+  assert.equal(document.querySelector('[role="alert"]').textContent, "Неможливо видалити тренування, поки воно не завершене");
   assert.deepEqual(pushed, []);
+});
+
+test("unexpected Delete failures keep the generic error", async () => {
+  await act(async () => root.render(screen(async () => ({ ok: false, code: "WORKOUT_DELETE_FAILED", error: "failed" }))));
+  await click(trigger()); await click(rows().find((row) => row.dataset.workoutId === "205"));
+  await click(action("Видалити тренування"));
+  await flush();
+  assert.equal(document.querySelector('[role="alert"]').textContent, "Не вдалося видалити тренування");
 });

@@ -42,7 +42,7 @@ export type ActiveWorkoutSession = {
 
 export type CompletedWorkoutSession = {
   id: string;
-  workoutId: string;
+  workoutId: string | null;
   workoutName: string;
   startedAt: string;
   completedAt: string;
@@ -84,6 +84,10 @@ export function elapsedTimer(startedAt: string, now = Date.now()): string {
 
 export function completedDurationMinutes(startedAt: string, completedAt: string): number {
   return Math.max(0, Math.floor((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 60_000));
+}
+
+export function completedWorkoutBackHref(workoutId: string | null): string {
+  return workoutId ? `/workouts/${encodeURIComponent(workoutId)}` : "/workouts";
 }
 
 export function countLabel(count: number, labels: [string, string, string]): string {

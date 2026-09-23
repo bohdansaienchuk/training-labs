@@ -81,7 +81,9 @@ export async function startWorkoutSession(tx: Transaction, workoutIdValue: strin
     return String(existing.id);
   }
 
-  const session = await tx.workoutSession.create({ data: { workoutId, userId } });
+  const session = await tx.workoutSession.create({
+    data: { workoutId, workoutName: workout.name, userId },
+  });
   for (const exercise of workout.exercises) {
     await createSessionExerciseFromTemplate(tx, session.id, exercise);
   }
@@ -244,7 +246,7 @@ export async function loadActiveWorkoutSession(tx: Transaction, workoutIdValue: 
       exercises: { orderBy: { position: "asc" }, include: { exercise: true, sets: { orderBy: { setNumber: "asc" } } } },
     },
   });
-  if (!session) return null;
+  if (!session || session.workoutId === null || !session.workout) return null;
   const exerciseIds = session.exercises.map((exercise) => exercise.exerciseId);
   const history = exerciseIds.length ? await tx.workoutSession.findMany({
     where: { id: { not: session.id }, userId, completedAt: { not: null }, exercises: { some: { exerciseId: { in: exerciseIds } } } },
@@ -278,17 +280,16 @@ export async function loadActiveWorkoutSession(tx: Transaction, workoutIdValue: 
   };
 }
 
-export async function loadCompletedWorkoutSession(tx: Transaction, workoutIdValue: string, sessionIdValue: string, userId: number): Promise<CompletedWorkoutSession | null> {
-  const workoutId = databaseId(workoutIdValue);
+export async function loadCompletedWorkoutSession(tx: Transaction, _workoutIdValue: string, sessionIdValue: string, userId: number): Promise<CompletedWorkoutSession | null> {
   const sessionId = databaseId(sessionIdValue);
-  if (!workoutId || !sessionId) return null;
+  if (!sessionId) return null;
   const session = await tx.workoutSession.findFirst({
-    where: { id: sessionId, workoutId, userId, completedAt: { not: null } },
-    include: { workout: { select: { name: true } }, exercises: { include: { sets: { where: { completed: true }, select: { id: true } } } } },
+    where: { id: sessionId, userId, completedAt: { not: null } },
+    include: { exercises: { include: { sets: { where: { completed: true }, select: { id: true } } } } },
   });
   if (!session?.completedAt) return null;
   return {
-    id: String(session.id), workoutId: String(session.workoutId), workoutName: session.workout.name,
+    id: String(session.id), workoutId: session.workoutId === null ? null : String(session.workoutId), workoutName: session.workoutName,
     startedAt: session.startedAt.toISOString(), completedAt: session.completedAt.toISOString(),
     exerciseCount: session.exercises.length,
     setCount: session.exercises.reduce((count, exercise) => count + exercise.sets.length, 0),

@@ -12,7 +12,7 @@ function historyDatabase() {
   const sessions = [
     {
       id: 101, userId: 7, startedAt: new Date("2026-09-26T19:00:00.000Z"), completedAt: new Date("2026-09-27T10:00:00.000Z"),
-      workout: { name: "Ранкове тренування" },
+      workoutName: "Ранкове тренування",
       exercises: [
         { exerciseId: 20, position: 2, sets: [
           { setNumber: 2, weight: new Prisma.Decimal("82.50"), reps: 8, rir: 1, completed: true },
@@ -24,20 +24,20 @@ function historyDatabase() {
     },
     {
       id: 102, userId: 7, startedAt: new Date("2026-09-26T22:30:00.000Z"), completedAt: new Date("2026-09-27T10:00:00.000Z"),
-      workout: { name: "Вечірнє тренування" },
+      workoutName: "Вечірнє тренування",
       exercises: [{ exerciseId: 20, position: 1, sets: [{ setNumber: 1, weight: null, reps: null, rir: null, completed: true }] }],
     },
     {
       id: 103, userId: 7, startedAt: new Date("2026-09-28T10:00:00.000Z"), completedAt: null,
-      workout: { name: "Незавершене" }, exercises: [{ exerciseId: 20, position: 1, sets: [] }],
+      workoutName: "Незавершене", exercises: [{ exerciseId: 20, position: 1, sets: [] }],
     },
     {
       id: 104, userId: 8, startedAt: new Date("2026-09-29T10:00:00.000Z"), completedAt: new Date("2026-09-29T11:00:00.000Z"),
-      workout: { name: "Чуже тренування" }, exercises: [{ exerciseId: 20, position: 1, sets: [] }],
+      workoutName: "Чуже тренування", exercises: [{ exerciseId: 20, position: 1, sets: [] }],
     },
     {
       id: 105, userId: 7, startedAt: new Date("2026-09-30T10:00:00.000Z"), completedAt: new Date("2026-09-30T11:00:00.000Z"),
-      workout: { name: "Інша вправа" }, exercises: [{ exerciseId: 21, position: 1, sets: [] }],
+      workoutName: "Інша вправа", exercises: [{ exerciseId: 21, position: 1, sets: [] }],
     },
   ];
   const calls = { exercise: [], sessions: [] };
@@ -61,7 +61,7 @@ function historyDatabase() {
             id: session.id,
             startedAt: session.startedAt,
             completedAt: session.completedAt,
-            workout: session.workout,
+            workoutName: session.workoutName,
             exercises: session.exercises
               .filter((entry) => entry.exerciseId === args.select.exercises.where.exerciseId)
               .toSorted((a, b) => a.position - b.position)
@@ -95,6 +95,8 @@ test("valid Exercise ID resolves the real exercise and completed owned history w
   const query = calls.sessions[0];
   assert.deepEqual(query.where, { userId: 7, completedAt: { not: null }, exercises: { some: { exerciseId: 20 } } });
   assert.deepEqual(query.orderBy, [{ completedAt: "desc" }, { id: "desc" }]);
+  assert.equal(query.select.workoutName, true);
+  assert.equal("workout" in query.select, false, "history must not require a live Workout relation");
   assert.deepEqual(query.select.exercises.where, { exerciseId: 20 });
   assert.deepEqual(query.select.exercises.orderBy, { position: "asc" });
   assert.equal(query.select.exercises.take, 1);

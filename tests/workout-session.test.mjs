@@ -14,7 +14,7 @@ import {
   startWorkoutSession,
   WorkoutSessionError,
 } from "../lib/workout-session.ts";
-import { completedDurationMinutes, elapsedTimer, validatePerformedSet } from "../lib/active-workout.ts";
+import { completedDurationMinutes, completedWorkoutBackHref, elapsedTimer, validatePerformedSet } from "../lib/active-workout.ts";
 
 function database() {
   let state = {
@@ -37,7 +37,10 @@ function database() {
     const sessionShape = (session, args) => {
       if (!session) return null;
       const result = { ...session };
-      if (args.include?.workout) result.workout = { name: working.workouts.find((item) => item.id === session.workoutId).name };
+      if (args.include?.workout) {
+        const workout = working.workouts.find((item) => item.id === session.workoutId);
+        result.workout = workout ? { name: workout.name } : null;
+      }
       if (args.include?.exercises) result.exercises = sessionExercises(session.id).map((entry) => ({
         ...entry,
         ...(args.include.exercises.include?.exercise ? { exercise: working.catalog.find((item) => item.id === entry.exerciseId) } : {}),
@@ -293,7 +296,37 @@ test("Finish rejects empty/partial rows atomically, then completes valid sets on
   assert.equal(completedDurationMinutes(completed.startedAt, completed.completedAt), 45);
   assert.equal(elapsedTimer(completed.startedAt, new Date(completed.completedAt).getTime()), "45:59");
   assert.equal(await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", id, 7)), null);
-  assert.equal(await db.transaction((tx) => loadCompletedWorkoutSession(tx, "11", id, 7)), null);
+  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, "11", id, 7))).id, id, "session ID and owner are authoritative for completed history");
+});
+
+test("Session name is snapshotted once, survives template rename/deletion, and Completed remains readable", async () => {
+  const db = database();
+  const firstId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  const first = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", firstId, 7));
+  await db.transaction((tx) => finishWorkoutSession(
+    tx, "10", firstId, 7,
+    first.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set))),
+  ));
+
+  db.mutate((state) => { state.workouts[0].name = "Нова назва"; });
+  assert.equal((await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 7))).workoutName, "Силове тренування");
+
+  const secondId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  assert.equal(db.snapshot().sessions.find((session) => session.id === Number(secondId)).workoutName, "Нова назва");
+  const second = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", secondId, 7));
+  await db.transaction((tx) => finishWorkoutSession(
+    tx, "10", secondId, 7,
+    second.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set))),
+  ));
+  db.mutate((state) => {
+    state.workouts = [];
+    for (const session of state.sessions) session.workoutId = null;
+  });
+
+  const orphaned = await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 7));
+  assert.equal(orphaned.workoutId, null);
+  assert.equal(orphaned.workoutName, "Силове тренування");
+  assert.equal(await db.transaction((tx) => loadCompletedWorkoutSession(tx, "10", firstId, 8)), null);
 });
 
 test("Previous results use the latest completed session, exclude current, and show no mock history", async () => {
@@ -305,6 +338,30 @@ test("Previous results use the latest completed session, exclude current, and sh
   const current = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", currentId, 7));
   assert.deepEqual(current.exercises.map((exercise) => exercise.previousSets.map((set) => set.weight)), [[70], [70, 70]]);
   assert.equal(current.exercises.every((exercise) => exercise.sets.every((set) => set.weight === null)), true);
+});
+
+test("Previous Results includes completed sessions after their Workout relation is set null", async () => {
+  const db = database();
+  const historyId = await db.transaction((tx) => startWorkoutSession(tx, "10", 7));
+  const history = await db.transaction((tx) => loadActiveWorkoutSession(tx, "10", historyId, 7));
+  await db.transaction((tx) => finishWorkoutSession(
+    tx, "10", historyId, 7,
+    history.exercises.flatMap((exercise) => exercise.sets.map((set) => valid(set, { weight: 75 }))),
+  ));
+  db.mutate((state) => {
+    state.sessions[0].workoutId = null;
+    state.workouts.push({ id: 11, userId: 7, name: "Replacement template" });
+    state.templateExercises.push({ id: 33, workoutId: 11, exerciseId: 20, position: 1 });
+    state.templateSets.push({ id: 44, workoutExerciseId: 33, setNumber: 1 });
+  });
+  const currentId = await db.transaction((tx) => startWorkoutSession(tx, "11", 7));
+  const current = await db.transaction((tx) => loadActiveWorkoutSession(tx, "11", currentId, 7));
+  assert.deepEqual(current.exercises[0].previousSets.map((set) => set.weight), [75]);
+});
+
+test("Completed Workout back navigation falls back when its template was deleted", () => {
+  assert.equal(completedWorkoutBackHref("10"), "/workouts/10");
+  assert.equal(completedWorkoutBackHref(null), "/workouts");
 });
 
 test("Performed-row validation drives automatic completion and rejects unsafe numeric values", () => {

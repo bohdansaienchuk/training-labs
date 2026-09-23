@@ -9,6 +9,7 @@ import { SearchField } from "@/components/search-field";
 import { WorkoutCard } from "@/components/workout-card";
 import { WorkoutListMenu, type WorkoutListAction } from "@/components/workout-list-menu";
 import { matchesSearch } from "@/lib/search";
+import type { WorkoutDeleteResult } from "@/lib/workout-delete";
 
 type WorkoutListItem = {
   id: string;
@@ -19,7 +20,7 @@ type WorkoutListItem = {
 
 type WorkoutsClientProps = {
   workouts: WorkoutListItem[];
-  deleteAction: (id: string) => Promise<string>;
+  deleteAction: (id: string) => Promise<WorkoutDeleteResult>;
 };
 
 function workoutSummary({ exerciseCount, setCount }: WorkoutListItem) {
@@ -33,7 +34,7 @@ export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) 
   const [actionListOpen, setActionListOpen] = useState(false);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const workoutList = useRef<HTMLUListElement>(null);
   const deleteInFlight = useRef(false);
@@ -41,7 +42,7 @@ export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) 
   const closeMenu = useCallback(() => {
     setActionListOpen(false);
     setSelectedWorkoutId(null);
-    setActionError(false);
+    setActionError(null);
   }, []);
 
   const selectedIndex = orderedWorkouts.findIndex((workout) => workout.id === selectedWorkoutId);
@@ -69,15 +70,22 @@ export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) 
     if (deleteInFlight.current) return;
     deleteInFlight.current = true;
     setDeleting(true);
-    setActionError(false);
+    setActionError(null);
     try {
-      const deletedId = await deleteAction(selectedWorkoutId);
+      const result = await deleteAction(selectedWorkoutId);
+      if (!result.ok) {
+        setActionError(result.code === "WORKOUT_HAS_ACTIVE_SESSION"
+          ? "Неможливо видалити тренування, поки воно не завершене"
+          : "Не вдалося видалити тренування");
+        return;
+      }
+      const deletedId = result.value;
       setOrderedWorkouts((current) => current.filter((workout) => workout.id !== deletedId));
       closeMenu();
       trigger.current?.focus();
       router.refresh();
     } catch {
-      setActionError(true);
+      setActionError("Не вдалося видалити тренування");
     } finally {
       deleteInFlight.current = false;
       setDeleting(false);
@@ -118,7 +126,7 @@ export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) 
           aria-controls={actionListOpen ? "workout-list-actions" : undefined}
           onClick={() => {
             if (actionListOpen) closeMenu();
-            else { setActionError(false); setActionListOpen(true); }
+            else { setActionError(null); setActionListOpen(true); }
           }}
           className="flex size-6 shrink-0 items-center justify-center rounded-8 focus-visible:outline-2 focus-visible:outline-primary-500">
           <Image src="/icons/workout-details/ellipsis.svg" alt="" width={4} height={18} unoptimized />
@@ -170,7 +178,7 @@ export function WorkoutsClient({ workouts, deleteAction }: WorkoutsClientProps) 
           />
         ))}
       </ul>
-      {actionError && <span role="alert" className="type-caption text-error">Не вдалося видалити тренування</span>}
+      {actionError && <span role="alert" className="type-caption text-error">{actionError}</span>}
     </main>
   );
 }

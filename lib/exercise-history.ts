@@ -65,7 +65,7 @@ export async function loadExerciseDetails(
       id: true,
       startedAt: true,
       completedAt: true,
-      workout: { select: { name: true } },
+      workoutName: true,
       exercises: {
         where: { exerciseId },
         orderBy: { position: "asc" },
@@ -91,7 +91,7 @@ export async function loadExerciseDetails(
       sessionId: String(session.id),
       startedAt: session.startedAt.toISOString(),
       completedAt: session.completedAt!.toISOString(),
-      workoutName: session.workout.name,
+      workoutName: session.workoutName,
       sets: (session.exercises[0]?.sets ?? []).map((set) => ({
         setNumber: set.setNumber,
         weight: set.weight?.toNumber() ?? null,

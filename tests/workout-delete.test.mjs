@@ -1,34 +1,45 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { deleteWorkoutTemplate } from "../lib/workout-delete.ts";
-import { workoutListItems } from "../lib/workout-list.ts";
+import { deleteWorkoutTemplate, WorkoutDeleteError } from "../lib/workout-delete.ts";
 
-function database({ withHistory = false } = {}) {
+function database({ sessionState = "none" } = {}) {
   let state = {
     catalog: [{ id: 10, name: "Bench" }, { id: 11, name: "Row" }],
-    workouts: [{ id: 101, name: "Delete me" }, { id: 202, name: "Keep me" }],
+    workouts: [{ id: 101, userId: 7, name: "Delete me" }, { id: 202, userId: 8, name: "Keep me" }],
     exercises: [{ id: 301, workoutId: 101, exerciseId: 10 }, { id: 302, workoutId: 202, exerciseId: 11 }],
     sets: [{ id: 401, workoutExerciseId: 301 }, { id: 402, workoutExerciseId: 302 }],
-    sessions: withHistory ? [{ id: 501, workoutId: 101 }] : [],
-    sessionExercises: withHistory ? [{ id: 601, workoutSessionId: 501, exerciseId: 10 }] : [],
-    performedSets: withHistory ? [{ id: 701, sessionExerciseId: 601 }] : [],
+    sessions: sessionState === "none" ? [] : [{
+      id: 501, workoutId: 101, workoutName: "Delete me", userId: 7,
+      completedAt: sessionState === "completed" ? new Date("2026-09-22T11:00:00.000Z") : null,
+    }],
+    sessionExercises: sessionState === "none" ? [] : [{ id: 601, workoutSessionId: 501, exerciseId: 10 }],
+    performedSets: sessionState === "none" ? [] : [{ id: 701, sessionExerciseId: 601, completed: sessionState === "completed" }],
   };
+
+  const matchesOwnedWorkout = (item, where) => item.id === where.id && item.userId === where.userId;
   return {
     snapshot: () => structuredClone(state),
     transaction: async (callback) => {
       const working = structuredClone(state);
       const result = await callback({
         workout: {
+          findFirst: async ({ where }) => working.workouts.find((item) => matchesOwnedWorkout(item, where)) ?? null,
           deleteMany: async ({ where }) => {
-            const workout = working.workouts.find((item) => item.id === where.id);
-            const hasHistory = working.sessions.some((session) => session.workoutId === where.id);
-            if (!workout || hasHistory) return { count: 0 };
+            const workout = working.workouts.find((item) => matchesOwnedWorkout(item, where));
+            const hasActive = working.sessions.some((session) => session.workoutId === where.id && session.userId === where.userId && session.completedAt === null);
+            if (!workout || hasActive) return { count: 0 };
             working.workouts = working.workouts.filter((item) => item.id !== where.id);
-            const entryIds = working.exercises.filter((entry) => entry.workoutId === where.id).map((entry) => entry.id);
+            const templateExerciseIds = working.exercises.filter((entry) => entry.workoutId === where.id).map((entry) => entry.id);
             working.exercises = working.exercises.filter((entry) => entry.workoutId !== where.id);
-            working.sets = working.sets.filter((set) => !entryIds.includes(set.workoutExerciseId));
+            working.sets = working.sets.filter((set) => !templateExerciseIds.includes(set.workoutExerciseId));
+            for (const session of working.sessions) if (session.workoutId === where.id) session.workoutId = null;
             return { count: 1 };
           },
+        },
+        workoutSession: {
+          findFirst: async ({ where }) => working.sessions.find((session) =>
+            session.workoutId === where.workoutId && session.userId === where.userId && session.completedAt === null,
+          ) ?? null,
         },
       });
       state = working;
@@ -37,30 +48,60 @@ function database({ withHistory = false } = {}) {
   };
 }
 
-test("database Delete removes only the selected template and cascading template rows, never catalog or unrelated data", async () => {
+test("Workout with no sessions deletes its template children only", async () => {
   const db = database();
-  assert.equal(await db.transaction((tx) => deleteWorkoutTemplate(tx, "101")), "101");
+  assert.equal(await db.transaction((tx) => deleteWorkoutTemplate(tx, "101", 7)), "101");
   const saved = db.snapshot();
   assert.deepEqual(saved.workouts.map((workout) => workout.id), [202]);
   assert.deepEqual(saved.exercises.map((entry) => entry.id), [302]);
   assert.deepEqual(saved.sets.map((set) => set.id), [402]);
   assert.deepEqual(saved.catalog.map((exercise) => exercise.id), [10, 11]);
-  assert.deepEqual(workoutListItems(saved.workouts.map((workout) => ({ ...workout, exercises: [] }))).map((workout) => workout.id), ["202"]);
-  await assert.rejects(db.transaction((tx) => deleteWorkoutTemplate(tx, "101")), /not found or has workout history/);
 });
 
-test("database Delete refuses a workout with history and preserves WorkoutSession, performed data, and the template", async () => {
-  const db = database({ withHistory: true });
+test("Workout with completed history deletes the template and preserves the full historical graph", async () => {
+  const db = database({ sessionState: "completed" });
+  assert.equal(await db.transaction((tx) => deleteWorkoutTemplate(tx, "101", 7)), "101");
+  const saved = db.snapshot();
+  assert.equal(saved.workouts.some((workout) => workout.id === 101), false);
+  assert.equal(saved.exercises.some((exercise) => exercise.workoutId === 101), false);
+  assert.equal(saved.sets.some((set) => set.workoutExerciseId === 301), false);
+  assert.deepEqual(saved.sessions, [{
+    id: 501, workoutId: null, workoutName: "Delete me", userId: 7,
+    completedAt: new Date("2026-09-22T11:00:00.000Z"),
+  }]);
+  assert.deepEqual(saved.sessionExercises, [{ id: 601, workoutSessionId: 501, exerciseId: 10 }]);
+  assert.deepEqual(saved.performedSets, [{ id: 701, sessionExerciseId: 601, completed: true }]);
+  assert.deepEqual(saved.workouts.map((workout) => workout.id), [202]);
+});
+
+test("Workout with an unfinished session returns a stable conflict and rolls back every mutation", async () => {
+  const db = database({ sessionState: "active" });
   const before = db.snapshot();
-  await assert.rejects(db.transaction((tx) => deleteWorkoutTemplate(tx, "101")), /not found or has workout history/);
+  await assert.rejects(
+    db.transaction((tx) => deleteWorkoutTemplate(tx, "101", 7)),
+    (error) => error instanceof WorkoutDeleteError && error.code === "WORKOUT_HAS_ACTIVE_SESSION",
+  );
   assert.deepEqual(db.snapshot(), before);
 });
 
-test("database Delete rejects non-database IDs before issuing a write", async () => {
+test("Workout deletion is owner-scoped and cannot delete another user's template", async () => {
+  const db = database();
+  const before = db.snapshot();
+  await assert.rejects(
+    db.transaction((tx) => deleteWorkoutTemplate(tx, "202", 7)),
+    (error) => error instanceof WorkoutDeleteError && error.code === "WORKOUT_NOT_FOUND",
+  );
+  assert.deepEqual(db.snapshot(), before);
+});
+
+test("invalid database IDs return not-found before issuing a write", async () => {
   const db = database();
   const before = db.snapshot();
   for (const id of ["", "draft", "1.5", "0", "2147483648"]) {
-    await assert.rejects(db.transaction((tx) => deleteWorkoutTemplate(tx, id)), /Invalid workout/);
+    await assert.rejects(
+      db.transaction((tx) => deleteWorkoutTemplate(tx, id, 7)),
+      (error) => error instanceof WorkoutDeleteError && error.code === "WORKOUT_NOT_FOUND",
+    );
   }
   assert.deepEqual(db.snapshot(), before);
 });
