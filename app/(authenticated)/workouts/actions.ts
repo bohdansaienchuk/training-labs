@@ -2,20 +2,20 @@
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { DEMO_USER_EMAIL } from "@/lib/demo-user";
+import { requireUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { deleteWorkoutTemplate, WorkoutDeleteError, type WorkoutDeleteResult } from "@/lib/workout-delete";
-import { findDemoUserId } from "@/lib/workout-session";
 
 const SERIALIZABLE_RETRY_LIMIT = 3;
 
 export async function deleteWorkoutAction(id: string): Promise<WorkoutDeleteResult> {
+  const authenticatedUser = await requireUser();
   for (let attempt = 1; attempt <= SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
     try {
-      const deletedId = await prisma.$transaction(async (tx) => {
-        const userId = await findDemoUserId(tx, DEMO_USER_EMAIL);
-        return deleteWorkoutTemplate(tx, id, userId);
-      }, { isolationLevel: "Serializable" });
+      const deletedId = await prisma.$transaction(
+        (tx) => deleteWorkoutTemplate(tx, id, authenticatedUser.id),
+        { isolationLevel: "Serializable" },
+      );
       revalidatePath("/workouts");
       revalidatePath(`/workouts/${deletedId}`);
       revalidatePath(`/workouts/${deletedId}/active`);

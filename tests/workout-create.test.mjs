@@ -45,8 +45,15 @@ function database() {
           working.workouts.push(workout);
           return workout;
         },
-        findUnique: async ({ where }) => workoutRecord(where.id),
-        update: async ({ where, data }) => Object.assign(working.workouts.find((item) => item.id === where.id), data),
+        findUnique: async ({ where }) => {
+          const record = workoutRecord(where.id);
+          return record && (where.userId === undefined || record.userId === where.userId) ? record : null;
+        },
+        update: async ({ where, data }) => {
+          const workout = working.workouts.find((item) => item.id === where.id && (where.userId === undefined || item.userId === where.userId));
+          if (!workout) throw new Error("Workout not found");
+          return Object.assign(workout, data);
+        },
       },
       workoutExercise: {
         create: async ({ data }) => {
@@ -138,7 +145,7 @@ test("a created database-shaped workout loads in Details/Active shape and remain
   edited.name = "Training B edited";
   edited.exercises.reverse();
   edited.exercises.forEach((exercise, index) => { exercise.position = index + 1; });
-  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited));
+  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited, 7));
   assert.equal(saved.name, "Training B edited");
   assert.deepEqual(saved.exercises.map((exercise) => exercise.exerciseId), ["12", "10"]);
 });

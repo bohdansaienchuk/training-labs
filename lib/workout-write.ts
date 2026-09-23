@@ -52,13 +52,13 @@ function workoutSetData(set: PlannedSet) {
   return { targetWeight: targetWeight(set), targetReps: set.reps, targetRir: set.rir ?? null };
 }
 
-export async function createWorkoutTemplate(tx: Transaction, draft: Workout, userId: number): Promise<Workout> {
-  if (!Number.isInteger(userId) || userId < 1) throw new Error("Invalid user");
+export async function createWorkoutTemplate(tx: Transaction, draft: Workout, authenticatedUserId: number): Promise<Workout> {
+  if (!Number.isInteger(authenticatedUserId) || authenticatedUserId < 1) throw new Error("Invalid user");
   const { name, exercises } = prepareWorkoutDraft(draft, true);
   const exerciseIds = exercises.map((exercise) => Number(exercise.exerciseId));
   await validateCatalogExercises(tx, exerciseIds);
 
-  const workout = await tx.workout.create({ data: { name, userId } });
+  const workout = await tx.workout.create({ data: { name, userId: authenticatedUserId } });
   for (const [exerciseIndex, exercise] of exercises.entries()) {
     const entry = await tx.workoutExercise.create({
       data: { workoutId: workout.id, exerciseId: Number(exercise.exerciseId), position: exerciseIndex + 1 },
@@ -77,12 +77,15 @@ export async function createWorkoutTemplate(tx: Transaction, draft: Workout, use
 
 // Called inside one Prisma transaction. Existing entry/set IDs survive edits;
 // temporary negative positions avoid unique-key collisions during reorders.
-export async function updateWorkoutTemplate(tx: Transaction, draft: Workout): Promise<Workout> {
+export async function updateWorkoutTemplate(tx: Transaction, draft: Workout, authenticatedUserId: number): Promise<Workout> {
   const workoutId = databaseId(draft.id);
-  if (!workoutId) throw new Error("Invalid workout");
+  if (!workoutId || !Number.isInteger(authenticatedUserId) || authenticatedUserId < 1) throw new Error("Workout not found");
   const { name, exercises } = prepareWorkoutDraft(draft, false);
 
-  const existing = await tx.workout.findUnique({ where: { id: workoutId }, include: workoutInclude });
+  const existing = await tx.workout.findUnique({
+    where: { id: workoutId, userId: authenticatedUserId },
+    include: workoutInclude,
+  });
   if (!existing) throw new Error("Workout not found");
   const existingEntries = new Map(existing.exercises.map((entry) => [entry.id, entry]));
   const retained = new Set<number>();
@@ -130,8 +133,14 @@ export async function updateWorkoutTemplate(tx: Transaction, draft: Workout): Pr
     }
   }
 
-  await tx.workout.update({ where: { id: workoutId }, data: { name } });
-  const saved = await tx.workout.findUnique({ where: { id: workoutId }, include: workoutInclude });
+  await tx.workout.update({
+    where: { id: workoutId, userId: authenticatedUserId },
+    data: { name },
+  });
+  const saved = await tx.workout.findUnique({
+    where: { id: workoutId, userId: authenticatedUserId },
+    include: workoutInclude,
+  });
   if (!saved) throw new Error("Workout disappeared during save");
   return serializeWorkout(saved);
 }

@@ -1,15 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { updateWorkoutTemplate } from "@/lib/workout-write";
 import type { Workout } from "@/lib/workout-template";
 import type { ActionResult } from "@/lib/active-workout";
-import { DEMO_USER_EMAIL } from "@/lib/demo-user";
-import { findDemoUserId, startWorkoutSession } from "@/lib/workout-session";
+import { startWorkoutSession } from "@/lib/workout-session";
 
 export async function saveWorkoutAction(draft: Workout): Promise<Workout> {
-  const saved = await prisma.$transaction((tx) => updateWorkoutTemplate(tx, draft));
+  const authenticatedUser = await requireUser();
+  const saved = await prisma.$transaction((tx) =>
+    updateWorkoutTemplate(tx, draft, authenticatedUser.id),
+  );
   revalidatePath("/workouts");
   revalidatePath(`/workouts/${saved.id}`);
   revalidatePath(`/workouts/${saved.id}/active`);
@@ -17,11 +20,12 @@ export async function saveWorkoutAction(draft: Workout): Promise<Workout> {
 }
 
 export async function startWorkoutAction(workoutId: string): Promise<ActionResult<string>> {
+  const authenticatedUser = await requireUser();
   try {
-    const sessionId = await prisma.$transaction(async (tx) => {
-      const userId = await findDemoUserId(tx, DEMO_USER_EMAIL);
-      return startWorkoutSession(tx, workoutId, userId);
-    }, { isolationLevel: "Serializable" });
+    const sessionId = await prisma.$transaction(
+      (tx) => startWorkoutSession(tx, workoutId, authenticatedUser.id),
+      { isolationLevel: "Serializable" },
+    );
     return { ok: true, value: sessionId };
   } catch {
     return { ok: false, error: "Не вдалося почати тренування" };

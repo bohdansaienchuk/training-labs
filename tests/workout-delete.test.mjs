@@ -2,14 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { deleteWorkoutTemplate, WorkoutDeleteError } from "../lib/workout-delete.ts";
 
-function database({ sessionState = "none" } = {}) {
+function database({ sessionState = "none", sessionUserId = 7 } = {}) {
   let state = {
     catalog: [{ id: 10, name: "Bench" }, { id: 11, name: "Row" }],
     workouts: [{ id: 101, userId: 7, name: "Delete me" }, { id: 202, userId: 8, name: "Keep me" }],
     exercises: [{ id: 301, workoutId: 101, exerciseId: 10 }, { id: 302, workoutId: 202, exerciseId: 11 }],
     sets: [{ id: 401, workoutExerciseId: 301 }, { id: 402, workoutExerciseId: 302 }],
     sessions: sessionState === "none" ? [] : [{
-      id: 501, workoutId: 101, workoutName: "Delete me", userId: 7,
+      id: 501, workoutId: 101, workoutName: "Delete me", userId: sessionUserId,
       completedAt: sessionState === "completed" ? new Date("2026-09-22T11:00:00.000Z") : null,
     }],
     sessionExercises: sessionState === "none" ? [] : [{ id: 601, workoutSessionId: 501, exerciseId: 10 }],
@@ -26,8 +26,10 @@ function database({ sessionState = "none" } = {}) {
           findFirst: async ({ where }) => working.workouts.find((item) => matchesOwnedWorkout(item, where)) ?? null,
           deleteMany: async ({ where }) => {
             const workout = working.workouts.find((item) => matchesOwnedWorkout(item, where));
-            const hasActive = working.sessions.some((session) => session.workoutId === where.id && session.userId === where.userId && session.completedAt === null);
-            if (!workout || hasActive) return { count: 0 };
+            const sessionsAreOwnedAndCompleted = working.sessions
+              .filter((session) => session.workoutId === where.id)
+              .every((session) => session.userId === where.userId && session.completedAt !== null);
+            if (!workout || !sessionsAreOwnedAndCompleted) return { count: 0 };
             working.workouts = working.workouts.filter((item) => item.id !== where.id);
             const templateExerciseIds = working.exercises.filter((entry) => entry.workoutId === where.id).map((entry) => entry.id);
             working.exercises = working.exercises.filter((entry) => entry.workoutId !== where.id);
@@ -37,9 +39,11 @@ function database({ sessionState = "none" } = {}) {
           },
         },
         workoutSession: {
-          findFirst: async ({ where }) => working.sessions.find((session) =>
-            session.workoutId === where.workoutId && session.userId === where.userId && session.completedAt === null,
-          ) ?? null,
+          findFirst: async ({ where }) => working.sessions.find((session) => {
+            if (session.workoutId !== where.workoutId) return false;
+            if (typeof where.userId === "object") return session.userId !== where.userId.not;
+            return session.userId === where.userId && session.completedAt === null;
+          }) ?? null,
         },
       });
       state = working;
@@ -89,6 +93,16 @@ test("Workout deletion is owner-scoped and cannot delete another user's template
   const before = db.snapshot();
   await assert.rejects(
     db.transaction((tx) => deleteWorkoutTemplate(tx, "202", 7)),
+    (error) => error instanceof WorkoutDeleteError && error.code === "WORKOUT_NOT_FOUND",
+  );
+  assert.deepEqual(db.snapshot(), before);
+});
+
+test("Workout deletion rejects a linked session owned by another user without changing either record", async () => {
+  const db = database({ sessionState: "completed", sessionUserId: 8 });
+  const before = db.snapshot();
+  await assert.rejects(
+    db.transaction((tx) => deleteWorkoutTemplate(tx, "101", 7)),
     (error) => error instanceof WorkoutDeleteError && error.code === "WORKOUT_NOT_FOUND",
   );
   assert.deepEqual(db.snapshot(), before);

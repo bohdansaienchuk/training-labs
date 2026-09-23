@@ -23,20 +23,26 @@ function databaseId(value: string): number | null {
   return /^[1-9]\d*$/.test(value) && Number(value) <= 2147483647 ? Number(value) : null;
 }
 
-export async function deleteWorkoutTemplate(tx: Prisma.TransactionClient, id: string, userId: number): Promise<string> {
+export async function deleteWorkoutTemplate(tx: Prisma.TransactionClient, id: string, authenticatedUserId: number): Promise<string> {
   const workoutId = databaseId(id);
-  if (!workoutId || !Number.isInteger(userId) || userId < 1) {
+  if (!workoutId || !Number.isInteger(authenticatedUserId) || authenticatedUserId < 1) {
     throw new WorkoutDeleteError("WORKOUT_NOT_FOUND");
   }
 
   const workout = await tx.workout.findFirst({
-    where: { id: workoutId, userId },
+    where: { id: workoutId, userId: authenticatedUserId },
     select: { id: true },
   });
   if (!workout) throw new WorkoutDeleteError("WORKOUT_NOT_FOUND");
 
+  const foreignSession = await tx.workoutSession.findFirst({
+    where: { workoutId, userId: { not: authenticatedUserId } },
+    select: { id: true },
+  });
+  if (foreignSession) throw new WorkoutDeleteError("WORKOUT_NOT_FOUND");
+
   const activeSession = await tx.workoutSession.findFirst({
-    where: { workoutId, userId, completedAt: null },
+    where: { workoutId, userId: authenticatedUserId, completedAt: null },
     select: { id: true },
   });
   if (activeSession) throw new WorkoutDeleteError("WORKOUT_HAS_ACTIVE_SESSION");
@@ -44,13 +50,24 @@ export async function deleteWorkoutTemplate(tx: Prisma.TransactionClient, id: st
   const deleted = await tx.workout.deleteMany({
     where: {
       id: workoutId,
-      userId,
-      sessions: { none: { completedAt: null } },
+      userId: authenticatedUserId,
+      sessions: {
+        every: {
+          userId: authenticatedUserId,
+          completedAt: { not: null },
+        },
+      },
     },
   });
   if (deleted.count !== 1) {
+    const foreignSessionAfterConflict = await tx.workoutSession.findFirst({
+      where: { workoutId, userId: { not: authenticatedUserId } },
+      select: { id: true },
+    });
+    if (foreignSessionAfterConflict) throw new WorkoutDeleteError("WORKOUT_NOT_FOUND");
+
     const activeSessionAfterConflict = await tx.workoutSession.findFirst({
-      where: { workoutId, userId, completedAt: null },
+      where: { workoutId, userId: authenticatedUserId, completedAt: null },
       select: { id: true },
     });
     if (activeSessionAfterConflict) throw new WorkoutDeleteError("WORKOUT_HAS_ACTIVE_SESSION");

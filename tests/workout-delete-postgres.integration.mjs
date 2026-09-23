@@ -13,7 +13,7 @@ class RollbackIntegrationFixture extends Error {}
 test("PostgreSQL Workout delete sets completed session workoutId null and preserves performed history", async () => {
   await assert.rejects(prisma.$transaction(async (tx) => {
     const nonce = `${Date.now()}-${Math.random()}`;
-    const user = await tx.user.create({ data: { email: `delete-fk-${nonce}@example.test` } });
+    const user = await tx.user.create({ data: { email: `delete-fk-${nonce}@example.test`, name: "Delete fixture" } });
     const exercise = await tx.exercise.create({ data: { name: `Delete FK ${nonce}` } });
     const workout = await tx.workout.create({
       data: {

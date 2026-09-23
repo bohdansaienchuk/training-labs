@@ -19,8 +19,11 @@ function database() {
     })) });
     return {
       workout: {
-        findUnique: async ({ where }) => where.id === working.workout.id ? workoutRecord() : null,
-        update: async ({ data }) => Object.assign(working.workout, data),
+        findUnique: async ({ where }) => where.id === working.workout.id && (where.userId === undefined || where.userId === working.workout.userId) ? workoutRecord() : null,
+        update: async ({ where, data }) => {
+          if (where.id !== working.workout.id || (where.userId !== undefined && where.userId !== working.workout.userId)) throw new Error("Workout not found");
+          return Object.assign(working.workout, data);
+        },
       },
       exercise: { findMany: async ({ where }) => working.catalog.filter((exercise) => where.id.in.includes(exercise.id)).map(({ id }) => ({ id })) },
       workoutExercise: {
@@ -98,7 +101,7 @@ test("Save commits edited template data to database state, not only the returned
   edited.exercises.push({ id: "new-entry", exerciseId: "12", name: "Row", position: 3, plannedSets: [
     { id: "row-set", position: 1, weight: 35, weightUnit: "kg", reps: 12, rir: 1 },
   ] });
-  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited));
+  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited, 1));
   assert.equal(saved.name, "Training B");
   assert.deepEqual(saved.exercises.map((entry) => [entry.exerciseId, entry.position]), [["11", 1], ["10", 2], ["12", 3]]);
   assert.deepEqual(saved.exercises[1].plannedSets.map((set) => [set.id, set.weight, set.reps, set.rir]), [["201", 52.5, 10, 0], ["204", 60, 7, 2]]);
@@ -125,7 +128,7 @@ test("save deletes removed exercises and sets, and fresh list data reflects the 
   const edited = draft();
   edited.exercises = [edited.exercises[0]];
   edited.exercises[0].plannedSets = [edited.exercises[0].plannedSets[0]];
-  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited));
+  const saved = await db.transaction((tx) => updateWorkoutTemplate(tx, edited, 1));
   assert.deepEqual(saved.exercises.map((entry) => entry.id), ["101"]);
   assert.deepEqual(db.snapshot().sets.map((set) => set.id), [201]);
   assert.equal(workoutListItems([{ id: 2048, name: saved.name, exercises: [{ sets: [{ targetReps: 10 }] }] }])[0].exerciseCount, 1);
@@ -137,7 +140,7 @@ test("transaction rollback leaves the saved template unchanged on a related-reco
   const edited = draft();
   edited.exercises[0].plannedSets.push({ id: "new-set", position: 3, weight: 50, weightUnit: "kg", reps: 5, rir: 1 });
   db.failSetCreate();
-  await assert.rejects(db.transaction((tx) => updateWorkoutTemplate(tx, edited)), /set insert failed/);
+  await assert.rejects(db.transaction((tx) => updateWorkoutTemplate(tx, edited, 1)), /set insert failed/);
   assert.deepEqual(db.snapshot(), before);
 });
 
@@ -151,7 +154,17 @@ test("save rejects a foreign workout exercise, set, or unknown catalog exercise"
     const before = db.snapshot();
     const edited = draft();
     change(edited);
-    await assert.rejects(db.transaction((tx) => updateWorkoutTemplate(tx, edited)));
+    await assert.rejects(db.transaction((tx) => updateWorkoutTemplate(tx, edited, 1)));
     assert.deepEqual(db.snapshot(), before);
   }
+});
+
+test("save treats a foreign owner like a missing Workout and leaves it unchanged", async () => {
+  const db = database();
+  const before = db.snapshot();
+  await assert.rejects(
+    db.transaction((tx) => updateWorkoutTemplate(tx, { ...draft(), name: "Stolen" }, 2)),
+    /Workout not found/,
+  );
+  assert.deepEqual(db.snapshot(), before);
 });

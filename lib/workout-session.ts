@@ -11,12 +11,6 @@ function databaseId(value: string): number | null {
   return /^[1-9]\d*$/.test(value) && Number(value) <= 2147483647 ? Number(value) : null;
 }
 
-export async function findDemoUserId(tx: Transaction, email: string): Promise<number> {
-  const user = await tx.user.findUnique({ where: { email }, select: { id: true } });
-  if (!user) throw new WorkoutSessionError("Workout user not found");
-  return user.id;
-}
-
 type SessionExerciseTemplate = {
   exerciseId: number;
   position: number;
@@ -61,18 +55,18 @@ async function reconcileWorkoutSession(tx: Transaction, session: { id: number; e
   }
 }
 
-export async function startWorkoutSession(tx: Transaction, workoutIdValue: string, userId: number): Promise<string> {
+export async function startWorkoutSession(tx: Transaction, workoutIdValue: string, authenticatedUserId: number): Promise<string> {
   const workoutId = databaseId(workoutIdValue);
-  if (!workoutId || !Number.isInteger(userId) || userId < 1) throw new WorkoutSessionError("Invalid workout session");
+  if (!workoutId || !Number.isInteger(authenticatedUserId) || authenticatedUserId < 1) throw new WorkoutSessionError("Invalid workout session");
 
   const workout = await tx.workout.findFirst({
-    where: { id: workoutId, userId },
+    where: { id: workoutId, userId: authenticatedUserId },
     include: { exercises: { orderBy: { position: "asc" }, include: { sets: { orderBy: { setNumber: "asc" } } } } },
   });
   if (!workout) throw new WorkoutSessionError("Workout not found");
 
   const existing = await tx.workoutSession.findFirst({
-    where: { workoutId, userId, completedAt: null },
+    where: { workoutId, userId: authenticatedUserId, completedAt: null },
     orderBy: [{ startedAt: "desc" }, { id: "desc" }],
     include: { exercises: { orderBy: { position: "asc" } } },
   });
@@ -82,7 +76,7 @@ export async function startWorkoutSession(tx: Transaction, workoutIdValue: strin
   }
 
   const session = await tx.workoutSession.create({
-    data: { workoutId, workoutName: workout.name, userId },
+    data: { workoutId, workoutName: workout.name, userId: authenticatedUserId },
   });
   for (const exercise of workout.exercises) {
     await createSessionExerciseFromTemplate(tx, session.id, exercise);
@@ -102,36 +96,53 @@ function performedData(input: PerformedSetInput) {
   };
 }
 
-async function ownedUnfinishedSet(tx: Transaction, workoutId: number, sessionId: number, userId: number, setId: number, sessionExerciseId: number) {
+async function ownedUnfinishedSet(tx: Transaction, workoutId: number, sessionId: number, authenticatedUserId: number, setId: number, sessionExerciseId: number) {
   return tx.performedSet.findFirst({
     where: {
       id: setId,
       sessionExerciseId,
-      sessionExercise: { workoutSession: { id: sessionId, workoutId, userId, completedAt: null } },
+      sessionExercise: {
+        workoutSession: {
+          id: sessionId,
+          workoutId,
+          userId: authenticatedUserId,
+          completedAt: null,
+          workout: { userId: authenticatedUserId },
+        },
+      },
     },
     select: { id: true },
   });
 }
 
-export async function savePerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, userId: number, input: PerformedSetInput) {
+export async function savePerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, authenticatedUserId: number, input: PerformedSetInput) {
   const workoutId = databaseId(workoutIdValue);
   const sessionId = databaseId(sessionIdValue);
   const setId = databaseId(input.id);
   const sessionExerciseId = databaseId(input.sessionExerciseId);
   if (!workoutId || !sessionId || !setId || !sessionExerciseId) throw new WorkoutSessionError("Invalid performed set");
-  if (!await ownedUnfinishedSet(tx, workoutId, sessionId, userId, setId, sessionExerciseId)) throw new WorkoutSessionError("Performed set not found");
+  if (!await ownedUnfinishedSet(tx, workoutId, sessionId, authenticatedUserId, setId, sessionExerciseId)) throw new WorkoutSessionError("Performed set not found");
   const data = performedData(input);
   await tx.performedSet.update({ where: { id: setId }, data });
   return { completed: data.completed };
 }
 
-export async function addPerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, expectedLastSetIdValue: string, userId: number) {
+export async function addPerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, expectedLastSetIdValue: string, authenticatedUserId: number) {
   const workoutId = databaseId(workoutIdValue);
   const sessionId = databaseId(sessionIdValue);
   const sessionExerciseId = databaseId(sessionExerciseIdValue);
   if (!workoutId || !sessionId || !sessionExerciseId) throw new WorkoutSessionError("Invalid session exercise");
   const exercise = await tx.sessionExercise.findFirst({
-    where: { id: sessionExerciseId, workoutSession: { id: sessionId, workoutId, userId, completedAt: null } },
+    where: {
+      id: sessionExerciseId,
+      workoutSession: {
+        id: sessionId,
+        workoutId,
+        userId: authenticatedUserId,
+        completedAt: null,
+        workout: { userId: authenticatedUserId },
+      },
+    },
     include: { sets: { orderBy: { setNumber: "desc" }, take: 1 } },
   });
   if (!exercise) throw new WorkoutSessionError("Session exercise not found");
@@ -148,14 +159,23 @@ export async function addPerformedSet(tx: Transaction, workoutIdValue: string, s
   return { id: String(created.id), setNumber: created.setNumber };
 }
 
-export async function removePerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, setIdValue: string, userId: number) {
+export async function removePerformedSet(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, setIdValue: string, authenticatedUserId: number) {
   const workoutId = databaseId(workoutIdValue);
   const sessionId = databaseId(sessionIdValue);
   const sessionExerciseId = databaseId(sessionExerciseIdValue);
   const setId = databaseId(setIdValue);
   if (!workoutId || !sessionId || !sessionExerciseId || !setId) throw new WorkoutSessionError("Invalid performed set");
   const exercise = await tx.sessionExercise.findFirst({
-    where: { id: sessionExerciseId, workoutSession: { id: sessionId, workoutId, userId, completedAt: null } },
+    where: {
+      id: sessionExerciseId,
+      workoutSession: {
+        id: sessionId,
+        workoutId,
+        userId: authenticatedUserId,
+        completedAt: null,
+        workout: { userId: authenticatedUserId },
+      },
+    },
     include: { sets: { orderBy: { setNumber: "asc" } } },
   });
   if (!exercise) throw new WorkoutSessionError("Session exercise not found");
@@ -166,22 +186,28 @@ export async function removePerformedSet(tx: Transaction, workoutIdValue: string
   return true;
 }
 
-async function ownedUnfinishedSessionExercises(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number) {
+async function ownedUnfinishedSessionExercises(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, authenticatedUserId: number) {
   const workoutId = databaseId(workoutIdValue);
   const sessionId = databaseId(sessionIdValue);
   const sessionExerciseId = databaseId(sessionExerciseIdValue);
   if (!workoutId || !sessionId || !sessionExerciseId) throw new WorkoutSessionError("Invalid session exercise");
   const session = await tx.workoutSession.findFirst({
-    where: { id: sessionId, workoutId, userId, completedAt: null },
+    where: {
+      id: sessionId,
+      workoutId,
+      userId: authenticatedUserId,
+      completedAt: null,
+      workout: { userId: authenticatedUserId },
+    },
     include: { exercises: { orderBy: { position: "asc" } } },
   });
   if (!session || !session.exercises.some((exercise) => exercise.id === sessionExerciseId)) throw new WorkoutSessionError("Session exercise not found");
   return { sessionExerciseId, exercises: session.exercises };
 }
 
-export async function moveSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number, direction: -1 | 1) {
+export async function moveSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, authenticatedUserId: number, direction: -1 | 1) {
   if (direction !== -1 && direction !== 1) throw new WorkoutSessionError("Invalid exercise direction");
-  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, userId);
+  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, authenticatedUserId);
   const index = exercises.findIndex((exercise) => exercise.id === sessionExerciseId);
   const targetIndex = index + direction;
   if (targetIndex < 0 || targetIndex >= exercises.length) return exercises.map((exercise) => String(exercise.id));
@@ -195,8 +221,8 @@ export async function moveSessionExercise(tx: Transaction, workoutIdValue: strin
   return reordered.map((exercise) => String(exercise.id));
 }
 
-export async function deleteSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, userId: number) {
-  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, userId);
+export async function deleteSessionExercise(tx: Transaction, workoutIdValue: string, sessionIdValue: string, sessionExerciseIdValue: string, authenticatedUserId: number) {
+  const { sessionExerciseId, exercises } = await ownedUnfinishedSessionExercises(tx, workoutIdValue, sessionIdValue, sessionExerciseIdValue, authenticatedUserId);
   await tx.sessionExercise.delete({ where: { id: sessionExerciseId } });
   const remaining = exercises.filter((exercise) => exercise.id !== sessionExerciseId);
   for (const [index, exercise] of remaining.entries()) {
@@ -206,12 +232,17 @@ export async function deleteSessionExercise(tx: Transaction, workoutIdValue: str
   return remaining.map((exercise) => String(exercise.id));
 }
 
-export async function finishWorkoutSession(tx: Transaction, workoutIdValue: string, sessionIdValue: string, userId: number, inputs: PerformedSetInput[], completedAt = new Date()) {
+export async function finishWorkoutSession(tx: Transaction, workoutIdValue: string, sessionIdValue: string, authenticatedUserId: number, inputs: PerformedSetInput[], completedAt = new Date()) {
   const workoutId = databaseId(workoutIdValue);
   const sessionId = databaseId(sessionIdValue);
   if (!workoutId || !sessionId) throw new WorkoutSessionError("Invalid workout session");
   const session = await tx.workoutSession.findFirst({
-    where: { id: sessionId, workoutId, userId },
+    where: {
+      id: sessionId,
+      workoutId,
+      userId: authenticatedUserId,
+      workout: { userId: authenticatedUserId },
+    },
     include: { exercises: { include: { sets: true } } },
   });
   if (!session) throw new WorkoutSessionError("Workout session not found");
